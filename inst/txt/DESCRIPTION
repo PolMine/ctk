@@ -1,0 +1,11 @@
+Package: PACKAGE
+Type: Package
+Title: PACKAGE
+Version: VERSION
+Date: DATE
+Author: AUTHOR
+Maintainer: MAINTAINER
+Depends:
+LazyData: yes
+Description: DESCRIPTION
+License: LICENSE

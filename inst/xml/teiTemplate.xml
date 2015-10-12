@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<TEI>
+  <teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title></title>
+				<excerpt></excerpt>
+				<author></author>
+			</titleStmt>
+			<publicationStmt>
+				<publisher></publisher>
+				<date when=""></date>
+				<page></page>
+			</publicationStmt>
+			<sourceDesc>
+				<p></p>
+				<id></id>
+				<date when=""></date>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<projectDesc></projectDesc>
+			<samplingDecl></samplingDecl>
+			<editorialDecl></editorialDecl>
+		</encodingDesc>
+		<profileDesc></profileDesc>
+		<revisionDesc></revisionDesc>
+	</teiHeader>
+	<text>
+		<body></body>
+	</text>
+</TEI>

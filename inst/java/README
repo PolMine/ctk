@@ -1,0 +1,2 @@
+javac -cp /opt/stanfordNLP/stanford-corenlp-full-2015-04-20/stanford-corenlp-3.5.2.jar MyFrenchTokenizer.java
+java -classpath .:/opt/stanfordNLP/stanford-corenlp-full-2015-04-20/stanford-corenlp-3.5.2.jar MyFrenchTokenizer figaro_08715.xml
