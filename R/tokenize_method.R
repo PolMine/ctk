@@ -167,23 +167,20 @@ setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
 
 #' @rdname tokenize-method
 setMethod("tokenize", "ctkPipe", function(
-  .Object, sourceDir, targetDir, with="stanfordNLP", lang="de",
-  pattern="xml", mc=FALSE, progress=TRUE, verbose=FALSE, sample=FALSE, files=NULL, continue=FALSE, failsafe=FALSE, ...
+  .Object, sourceDir, targetDir, with="stanfordNLP", lang="de", ...
   ){
   checkDirs(.Object=.Object, sourceDir, targetDir)
   dirApply(
     f=.tokenizeWorker, sourceDir=file.path(.Object@projectDir, sourceDir),
     targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(with=with, lang=lang),
-    pattern=pattern, mc=mc, progress=progress, verbose=verbose,
-    sample=sample, files=files, continue=continue, failsafe=failsafe, ...       
+    param=list(with=with, lang=lang), ...       
     )
 })
  
-setMethod("tokenize", "character", function(.Object, lang="de", with="stanfordNLP"){
+setMethod("tokenize", "character", function(.Object, lang="de", with="stanfordNLP", ...){
   .tokenizeWorker(
     filename=.Object, sourceDir=NULL, targetDir=NULL,
-    verbose=FALSE, param=list(lang=lang, with=with)
+    verbose=FALSE, param=list(lang=lang, with=with, ...)
     )
 })
 

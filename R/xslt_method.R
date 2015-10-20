@@ -23,7 +23,7 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
   if (is.null(sourceDir)){
     if (returnString == TRUE){
       xmlDir <- file.path(targetDir, "xml")
-      if (dir.exists(xmlDir) == FALSE) dir.create(file.path(targetDir, "xml"))
+      if (file.exists(xmlDir) == FALSE) dir.create(file.path(targetDir, "xml"))
       sourceDir <- xmlDir
     } else {
       sourceDir <- tempdir()
@@ -56,27 +56,23 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
 
 
 
-
-
-
-
 #' @param xslFile file for the xsl transformation
 #' @param mkdir logical, whether to create the outDir, if it does not yet exist
 #' @return return of the saxon parser
 #' @exportMethod xslt
 #' @rdname ctkPipe
 setMethod("xslt", "ctkPipe", function(
-  .Object, sourceDir, targetDir, xslFile, pattern="xml",
-  mc=FALSE, verbose=TRUE, continue=FALSE, progress=FALSE, sample=FALSE, filenames=NULL, failsafe=FALSE, ...
-  ){
+  .Object, sourceDir, targetDir, xslFile, ...
+){
   # assign("xslFile", xslFile, envir=.GlobalEnv)
   dirApply(
     f=.xsltWorker,
-    sourceDir=file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
-    pattern=pattern, param=list(xslFile=xslFile), 
-    mc=mc, verbose=verbose, continue=continue, progress=progress, sample=sample, filenames=filenames, failsafe=failsafe, ...
+    sourceDir=file.path(.Object@projectDir, sourceDir),
+    targetDir=file.path(.Object@projectDir, targetDir),
+    param=list(xslFile=xslFile), 
+    ...
   )       
-  })
+})
 
 setMethod("xslt", "character", function(.Object, xslFile){
   .xsltWorker(filename=.Object, param=list(xslFile=xslFile))
