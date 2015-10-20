@@ -43,12 +43,10 @@ setMethod("sAttributeList", "character", function(.Object, ...){
 #' @import XML
 #' @exportMethod sAttributeList
 #' @rdname ctkPipe
-setMethod("sAttributeList", "ctkPipe", function(.Object, sourceDir, mc=TRUE){
-  sAttributes <- sAttributeList(
-    file.path(object@projectDir, sourceDir), mc=mc
-  )
-  object@sAttributes <- sAttributes
-  return(object)
+setMethod("sAttributeList", "ctkPipe", function(.Object, sourceDir, ...){
+  sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), ...)
+  .Object@sAttributes <- sAttributes
+  return(.Object)
 })
 
 

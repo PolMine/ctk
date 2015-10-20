@@ -70,10 +70,10 @@ setMethod("cwbImport", "character", function(.Object, corpus="FOO", cwbRegistry,
 #' @param xml logical
 #' @exportMethod cwbImport
 #' @rdname ctkPipe
-setMethod("cwbImport", "ctkPipe", function(.Object, corpus, sourceDir, xml=TRUE, verbose=TRUE, ...){
+setMethod("cwbImport", "ctkPipe", function(.Object, sourceDir, corpus, xml=TRUE, verbose=TRUE, ...){
   if (length(.Object@sAttributes) == 0) {
     if (verbose == TRUE) message("... getting sAttributes")
-    .Object <- sAttributeList(.Object, verbose=verbose, ...) 
+    .Object <- sAttributeList(.Object, sourceDir=sourceDir, ...) 
   }
   cwbImport(.Object=file.path(.Object@projectDir, sourceDir), corpus=corpus, cwbRegistry=.Object@cwbRegistry, sAttributes=.Object@sAttributes, xml=xml)
   return(.Object)

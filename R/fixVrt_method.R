@@ -1,5 +1,3 @@
-setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
-
 #' correct/polish vrt files
 #' 
 #' The treetagger wrapper script results in some faulty lines - this is corrected here.
@@ -11,9 +9,8 @@ setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
 #' @exportMethod fixVrt
 #' @aliases fixVrt-method fixVrt
 #' @rdname fixVrt-method
-setMethod("fixVrt", "character", function(.Object, targetDir="/Users/blaette/Lab/tmp/polished", mc=FALSE, verbose=TRUE){
-  .iterateFunctionFiles(sourceDir=.Object, f=.repairVrtFile, pattern="vrt$", mc=mc, verbose=verbose, progress=progress, targetDir=targetDir)
-})
+setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
+
 
 
 .repairVrtFile <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
@@ -72,18 +69,13 @@ setMethod("fixVrt", "character", function(.Object, targetDir="/Users/blaette/Lab
 }
 
 #' @rdname ctkPipe
-setMethod("fixVrt", "ctkPipe", function(
-  .Object, sourceDir, targetDir,
-  pattern=NULL, mc=FALSE, progress=TRUE, verbose=FALSE,
-  sample=FALSE, files=NULL, continue=FALSE, failsafe=FALSE
-  ){
+setMethod("fixVrt", "ctkPipe", function(.Object, sourceDir, targetDir, ...){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.repairVrtFile,
     sourceDir=file.path(.Object@projectDir, sourceDir),
     targetDir=file.path(.Object@projectDir, targetDir),
-    pattern=pattern, mc=mc, progress=progress, verbose=verbose,
-    sample=sample, files=files, continue=continue, failsafe=failsafe
+    ...
     )
 })
 

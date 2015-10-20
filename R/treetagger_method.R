@@ -73,10 +73,8 @@ setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
 #' @rdname ctkPipe
 setMethod("treetagger", "ctkPipe", function(
   .Object,
-  sourceDir="xml",  targetDir="vrt", py=FALSE,
-  parallel=FALSE, lang="de", fix=FALSE, verbose=TRUE, pattern="xml",
-  mc=FALSE, continue=FALSE, progress=FALSE, sample=FALSE,
-  files=NULL, failsafe=FALSE
+  sourceDir="xml",  targetDir="vrt", py=FALSE, lang="de",
+  ...
 ){
   checkDirs(.Object, sourceDir, targetDir)
   if (py==TRUE){
@@ -84,16 +82,14 @@ setMethod("treetagger", "ctkPipe", function(
       .Object=file.path(.Object@projectDir, sourceDir),
       targetDir=file.path(.Object@projectDir, targetDir),
       treetaggerPath=.Object@treetaggerPath,
-      parallel=parallel, lang=lang, verbose=verbose
+      parallel=mc, lang=lang, verbose=verbose
     )    
     retval <- NULL
   } else {
     retval <- dirApply(
       f=.treetaggerWorker,
       sourceDir=file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
-      param=list(lang=lang), pattern=pattern,
-      mc=mc, verbose=verbose, continue=continue, progress=progress, sample=sample,
-      filenames=filenames, failsafe=failsafe
+      param=list(lang=lang), ...
       )
   }
   retval

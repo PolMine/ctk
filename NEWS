@@ -1,3 +1,8 @@
+TODO
+====
+* dirApply -> error when all files have been processed?
+
 v0.2.3
 ======
 * check method renamed as getAttributeValues, and using dirApply
+
