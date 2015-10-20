@@ -23,7 +23,7 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
   if (is.null(sourceDir)){
     if (returnString == TRUE){
       xmlDir <- file.path(targetDir, "xml")
-      if (dir.exists(xmlDir) == FALSE) dir.create(file.path(targetDir, "xml"))
+      if (file.exists(xmlDir) == FALSE) dir.create(file.path(targetDir, "xml"))
       sourceDir <- xmlDir
     } else {
       sourceDir <- tempdir()

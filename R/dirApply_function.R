@@ -131,7 +131,7 @@ dirApply <- function(
       # if (verbose == TRUE) message("... length of the return value is: ", length(retval))
     }
   }
-  names(retval) <- filenames
+  # names(retval) <- filenames
   if (unique(lapply(retval, class)) == "difftime") class(retval) <- "timePerFile"
   return(retval)
 }
