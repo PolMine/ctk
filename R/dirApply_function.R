@@ -56,7 +56,7 @@ dirApply <- function(
     filenames <- filesToGo
   }
   if (sample != FALSE) filenames <- sample(filenames, size=sample)
-  # if (verbose == TRUE) progress <- FALSE
+  
   if (mc == FALSE) {
     if (progress == TRUE) verbose <- FALSE
     startTime <- Sys.time()
@@ -64,11 +64,17 @@ dirApply <- function(
       if (verbose == TRUE) message("... processing ", filenames[i])
       if (progress == TRUE) .progressBar(i, length(filenames), showShare=TRUE, startTime=startTime)
       if (failsafe == FALSE) {
-        f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param)  
+        toReturn <- f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param)  
       } else {
-        try(f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param))
+        toReturn <- try(f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param))
       }
+      toReturn
     })
+    if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
+      class(retval) <- "timePerFile"
+    }
+    names(retval) <- filenames
+    return(retval)
   } else if (mc == TRUE || is.numeric(mc)){
     if (is.numeric(mc) == TRUE){
       noCores <- mc
@@ -128,12 +134,13 @@ dirApply <- function(
       .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
       dummy <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
       retval <- unlist(retval, recursive = FALSE)
-      # if (verbose == TRUE) message("... length of the return value is: ", length(retval))
+      if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
+        class(retval) <- "timePerFile"
+      }
+      names(retval) <- filenames
+      return(retval)
     }
   }
-  # names(retval) <- filenames
-  if (unique(lapply(retval, class)) == "difftime") class(retval) <- "timePerFile"
-  return(retval)
 }
 
 parvapply <- function(index, f, verbose=FALSE, mc=TRUE, param=list()){
@@ -183,6 +190,6 @@ parvapply <- function(index, f, verbose=FALSE, mc=TRUE, param=list()){
   .progressBar(length(filesTargetDir), length(index), showShare=TRUE, startTime=startTime)
   dummy <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
   retval <- unlist(retval, recursive = FALSE)
-  names(retval)
+  # names(retval)
   retval
 }

@@ -15,28 +15,60 @@ NULL
 #' @importFrom stringi stri_enc_detect
 setGeneric("adjustEncoding", function(.Object, ...) standardGeneric("adjustEncoding"))
 
+.getEncoding <- function(filename, sourceDir){
+  fileRetval <- system(paste("file", "--mime", file.path(sourceDir, filename), collapse=" "), intern=TRUE)
+  stringiEncoding <- NA
+  guessedEncoding <- NA
+  suggestedEncoding <- NA
+  fileEncoding <- gsub("^.*charset=(.*)$", "\\1", fileRetval)
+  if (fileEncoding %in% c("binary", "unknown-8bit")){
+    content <- paste(scan(file.path(sourceDir, filename), what="character", quiet=TRUE, sep="\n"), collapse="\n")
+    stringiEncoding <- stri_enc_detect(content)[[1]][["Encoding"]][1]
+    Encoding(content) <- toupper(stringiEncoding)
+    iconvTry <- iconv(content, from=toupper(stringiEncoding), to="UTF-8")
+    if (is.na(iconvTry)){
+      iconvTry2 <- iconv(content, from="CP850", to="UTF-8")
+      if (!is.na(iconvTry2)){
+        guessedEncoding <- "CP850"
+        suggestedEncoding <- guessedEncoding
+      }
+    } else {
+      suggestedEncoding <- stringiEncoding
+    }
+  } else {
+    suggestedEncoding <- fileEncoding
+  }
+  encoding <- c(
+    fileEncoding=fileEncoding, stringiEncoding=stringiEncoding,
+    guessedEncoding=guessedEncoding, suggestedEncoding=suggestedEncoding
+    )
+  encoding <- toupper(encoding)
+  encoding
+}
 
 .iconvWorker <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()) {
+  log <- param[["log"]]
   startTime <- Sys.time()
   if (is.null(targetDir)) targetDir <- sourceDir
   from <- param[["from"]]
   to <- param[["to"]]
   isXml <- param[["xml"]]
   availableEncodings <- unlist(strsplit(gsub("//", "", system("iconv -l", intern=TRUE)), " "))
-  if (is.null(from)){
-    fileRetval <- system(paste("file", "--mime", file.path(.Object, filename), collapse=" "), intern=TRUE)
-    fileEncoding <- gsub("^.*charset=(.*)$", "\\1", fileRetval)
-    if (fileEncoding %in% c("binary", "unknown-8bit")){
-      content <- paste(scan(file.path(.Object, filename), what="character", quiet=TRUE), sep="\n", collapse="\n")
-      fileEncoding <- stri_enc_detect(content)[[1]][["Encoding"]][1]
+  if (is.null(from)) {
+    encodingOptions <- .getEncoding(filename, sourceDir)
+    if (log == TRUE) {
+      cat(
+        paste(filename, paste(encodingOptions, sep="\t", collapse="\t"), "\n", sep="\t"),
+        file=file.path(targetDir, "encodingLogfile.log"), append=TRUE
+        )
     }
-    from <- toupper(fileEncoding)
+    from <- encodingOptions["suggestedEncoding"]
   }
   if (!from %in% availableEncodings) warning("Encoding ", from, " is not an encoding that can be processed by iconv")
   if (!to %in% availableEncodings) warning("Encoding ", to, " is not an encoding that can be processed by iconv")
   cmdIconvRaw <- c(
     "iconv", "-f", from, "-t", to, "-c",
-    '--unicode-subst=" "',
+#    '--unicode-subst=" "',
     file.path(sourceDir, filename),
     ">", file.path(targetDir, filename)
   )
@@ -44,7 +76,8 @@ setGeneric("adjustEncoding", function(.Object, ...) standardGeneric("adjustEncod
   system(cmdIconv)
   if (isXml == TRUE){
     cmdSedRaw <- c(
-      "sed", "-i", "''",
+      "sed", "-i",
+#      "''",
       paste("'1s/", from, "/", to, "/'", sep=""),
       file.path(targetDir, filename)
     )
@@ -67,16 +100,15 @@ setMethod("adjustEncoding", "character", function(.Object, targetDir=NULL, from=
 })
 
 #' @rdname adjustEncoding-method
-setMethod("adjustEncoding", "ctkPipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, ...){
+setMethod("adjustEncoding", "ctkPipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.iconvWorker,
     sourceDir=file.path(.Object@projectDir, sourceDir),
     targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(from=from, to=to, xml=xml),
+    param=list(from=from, to=to, xml=xml, log=log),
     ...
   )
-  
 })
 
 
