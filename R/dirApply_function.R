@@ -42,6 +42,7 @@ dirApply <- function(
   param=list()
   ){
   if (is.null(filenames)) filenames <- list.files(sourceDir, pattern)
+  if (length(filenames) == 0) stop("no files in sourceDir")
   if (continue == TRUE){
     if ( verbose == TRUE ) message ("... getting files not yet present in targetDir")
     filesTargetDir <- list.files(targetDir)
@@ -64,9 +65,9 @@ dirApply <- function(
       if (verbose == TRUE) message("... processing ", filenames[i])
       if (progress == TRUE) .progressBar(i, length(filenames), showShare=TRUE, startTime=startTime)
       if (failsafe == FALSE) {
-        toReturn <- f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param)  
+        toReturn <- f(filename=filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param))  
       } else {
-        toReturn <- try(f(filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param))
+        toReturn <- try(f(filename=filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param)))
       }
       toReturn
     })
@@ -85,8 +86,11 @@ dirApply <- function(
     }
     if (progress == FALSE){
       retval <- mclapply(
-        filenames,
-        function(file) f(file, sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param),
+        c(1:length(filenames)),
+        function(i) f(
+          filenames[i], sourceDir=sourceDir, targetDir=targetDir,
+          verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param)
+          ),
         mc.cores=noCores
         )  
     } else if (progress == TRUE){

@@ -135,6 +135,47 @@ removeWhitespace <- function(x, rmBlankLines=TRUE){
   }
 }
 
+#' remove empty lines
+#' 
+#' @param x
+#' @export removeEmptyLines
+#' @rdname removeEmptyLines
+#' @name removeEmptyLines
+removeEmptyLines <- function(x){
+  emptyLines <- grep("^\\s*$", x)
+  if (length(emptyLines) > 0 ){
+    for (i in rev(emptyLines)) x <- x[-i]
+  } 
+  x
+}
+
+#' @importFrom stringi stri_match_all_regex
+#' @export normalizeGermanDate 
+#' @rdname normalizeGermanDate
+#' @name normalizeGermanDate
+normalizeGermanDate <- function(dateRaw){
+  monthToNumber <- c(
+    Januar=1, Februar=2, März=3, April=4, Mai=5, Juni=6, Juli=7, August=8, September=9, Oktober=10, November=11, Dezember=12
+  )
+  dateRegex <- paste(
+    "^\\s*(\\d+)\\.\\s+(",
+    paste(names(monthToNumber), collapse="|"),
+    ")\\s+(\\d{4})\\s*$", sep=""
+  )
+  regexMatch <- stri_match_all_regex(dateRaw, pattern=dateRegex)[[1]][1,]
+  paste(
+    regexMatch[4],
+    sprintf("%02d", as.numeric(monthToNumber[regexMatch[3]])),
+    sprintf("%02d", as.numeric(regexMatch[2])),
+    sep="-"
+  )
+}
+
+#' @export regexDate
+regexDate <- list(
+  de="\\d+\\.\\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d+"
+)
+
 
 .as.human <- function(x){
   data.frame(
@@ -145,4 +186,4 @@ removeWhitespace <- function(x, rmBlankLines=TRUE){
     value=x$v
   )
 }
-as
+

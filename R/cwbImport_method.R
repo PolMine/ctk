@@ -42,7 +42,7 @@ setMethod("cwbImport", "character", function(.Object, corpus="FOO", cwbRegistry,
   cmd <- c(
     "cwb-encode",
     "-d", file.path(indexedCorpusDir, tolower(corpus)),
-    "-F", file.path(.Object),
+    "-F", .Object,
     "-R", file.path(cwbRegistry, tolower(corpus)),
     "-P", "pos",
     "-P", "lemma",

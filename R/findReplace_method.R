@@ -3,7 +3,9 @@ NULL
 
 setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
 
-.findReplace <- function(filename, sourceDir, targetDir, verbose, ...){
+.findReplace <- function(filename, sourceDir, targetDir, verbose, param){
+  startTime <- Sys.time()
+  replacements <- param[["replacements"]]
   doc <- scan(
     file=file.path(sourceDir, filename),
     what="character", sep="\n",
@@ -15,6 +17,7 @@ setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
     doc, sep="\n",
     file=file.path(targetDir, filename)
   )
+  return(Sys.time() - startTime)
 }
 
 
@@ -26,16 +29,16 @@ setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
 setMethod("findReplace", "ctkPipe", function(
   object, sourceDir, targetDir, replacements,
   pattern=NULL, mc=FALSE, progress=TRUE, verbose=FALSE, sample=FALSE,
-  files=NULL, continue=FALSE, failsafe=FALSE, ...
+  filenames=NULL, continue=FALSE, failsafe=FALSE, ...
   ){
   checkDirs(object, sourceDir, targetDir)
-  assign("replacements", replacements, envir=.GlobalEnv)
+  # assign("replacements", replacements, envir=.GlobalEnv)
   dirApply(
     f=.findReplace,
-    x=file.path(object@projectDir, sourceDir),
-    y=file.path(object@projectDir, targetDir),
+    sourceDir=file.path(object@projectDir, sourceDir),
+    targetDir=file.path(object@projectDir, targetDir),
     pattern=pattern, mc=mc, progress=progress, verbose=verbose, sample=sample,
-    files=files, continue=continue, failsafe=failsafe, replacements=replacements, ...
+    filenames=filenames, continue=continue, failsafe=failsafe, param=list(replacements=replacements)
     )
 })
 
