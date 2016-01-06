@@ -11,7 +11,7 @@ setGeneric("mergeFiles", function(.Object, ...) standardGeneric("mergeFiles"))
 #' @param regex the regex to match the files
 #' @param mc logical, whether to use parallel processing
 #' @param verbose logical, whether to be verbose
-#' @param ...
+#' @param ... further parameters
 setMethod("mergeFiles", "ctkPipe", function(
   .Object, sourceDir, targetDir, regex, rootElement, rootAttrs,
   mc=FALSE, verbose=TRUE, ...

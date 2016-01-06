@@ -44,3 +44,9 @@ setMethod("print", "timePerFile", function(x){
   cat("Number of files processed: ", length(x), "\n")
   cat("Average time per file:     ", meanTime)
 })
+
+#' @export print.timePerFile
+print.timePerFile <- function(x) show(x)
+
+#' @export show.timePerFile
+show.timePerFile <- function(x) show(x)

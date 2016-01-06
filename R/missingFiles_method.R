@@ -3,7 +3,7 @@
 #' @param .Object ctkObject
 #' @param sourceDir bla
 #' @param targetDir bla
-#' @param ...
+#' @param ... further parameters
 #' @rdname missingFiles
 #' @name missingFiles
 #' @exportMethod missingFiles

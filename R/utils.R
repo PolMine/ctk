@@ -137,7 +137,7 @@ removeWhitespace <- function(x, rmBlankLines=TRUE){
 
 #' remove empty lines
 #' 
-#' @param x
+#' @param x object
 #' @export removeEmptyLines
 #' @rdname removeEmptyLines
 #' @name removeEmptyLines
@@ -149,6 +149,8 @@ removeEmptyLines <- function(x){
   x
 }
 
+#' normalize german date 
+#' 
 #' @importFrom stringi stri_match_all_regex
 #' @export normalizeGermanDate 
 #' @rdname normalizeGermanDate

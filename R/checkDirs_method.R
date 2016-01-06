@@ -2,9 +2,9 @@ setGeneric("checkDirs", function(.Object, ...) standardGeneric("checkDirs"))
 
 #' check whether necessary directories exist
 #' 
-#' @param .Object
+#' @param .Object object 
 #' @param sourceDir directory1
-#' @param targetDir
+#' @param targetDir target directory
 #' @exportMethod checkDirs
 #' @rdname ctkPipe-class
 setMethod("checkDirs", "ctkPipe", function(.Object, sourceDir, targetDir){
