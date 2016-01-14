@@ -189,3 +189,38 @@ regexDate <- list(
   )
 }
 
+editRegistry <- function(
+  corpus, name=NULL, id=NULL, home=NULL, info=NULL,
+  charset=NULL, language=NULL, properties=NULL
+  ){
+  registryFilename <- file.path(Sys.getenv("CORPUS_REGISTRY"), tolower(corpus))
+  registry <- scan(registryFilename, what="character", blank.lines.skip=FALSE, sep="\n", quiet=TRUE)
+  if (!is.null(name)) registry[grep("^NAME", registry)] <- paste("NAME", name, sep=" ")
+  if (!is.null(id)) registry[grep("^ID", registry)] <- paste("ID", id, sep=" ")
+  if (!is.null(home)) registry[grep("^ID", registry)] <- paste("HOME", home, sep=" ")
+  if (!is.null(info)) registry[grep("^ID", registry)] <- paste("INFO", info, sep=" ")
+  if (!is.null(language)){
+    i <- grep("##::\\s+language", registry)
+    registry[i] <- gsub('".*?"', paste('"', language, '"', sep=""), registry[i])
+  }
+  if (!is.null(charset)){
+    i <- grep("##::\\s+charset", registry)
+    registry[i] <- gsub('".*?"', paste('"', charset, '"', sep=""), registry[i])
+  }
+  if (!is.null(properties)){
+    propertyLines <- grep("^##::", registry)
+    lastPropertyLine <- propertyLines[length(propertyLines)]
+    newPropertyLines <- unlist(lapply(
+      names(properties),
+      function(x) paste(
+        "##:: ", x, ' = "', paste(properties[[x]], collapse='|'), '"', sep=''
+      )
+      ))
+    registry <- c(
+      registry[1:lastPropertyLine],
+      newPropertyLines,
+      registry[(lastPropertyLine + 1):(length(registry))]
+      )
+  }
+  cat(registry, file=registryFilename, sep="\n")
+}
