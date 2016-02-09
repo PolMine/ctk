@@ -14,11 +14,11 @@ get duplicates
 \examples{
 \dontrun{
 xmlDir <- "/Users/blaette/Lab/repos/keywords/data/figaro/xml"
-charCount <- characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=3)
-ngramMatrix <- getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
+charCount <- ctk::characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=3)
+ngramMatrix <- ctk::getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
 ngramMatrixWeighed <- polmineR::weigh(ngramMatrix, method="tfidf")
 docsToCompareMatrix <- getPotentialDuplicates(xmlDir, reduce=TRUE, progress=TRUE, verbose=TRUE, mc=3)
-similarityMatrix <- documentSimilarity(x=ngramMatrixWeighed, select=docsToCompareMatrix, verbose=TRUE, progress=TRUE, mc=3)
+similarityMatrix <- polmineR::similarity(x=ngramMatrixWeighed, select=docsToCompareMatrix, verbose=TRUE, progress=TRUE, mc=3)
 duplicates <- getDuplicates(xmlDir, similarityMatrix=similarityMatrix, progress=TRUE, mc=3, verbose=TRUE)
 annotatedXML <- annotateDuplicates(
   .Object=xmlDir, targetDir=NULL,

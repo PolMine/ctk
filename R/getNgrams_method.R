@@ -1,11 +1,9 @@
-
 setGeneric("getNgrams", function(.Object, ...) standardGeneric("getNgrams"))
 
 #' get ngrams 
 #' 
 #' @param .Object the source directory
-#' @param .charCount a count of the characters in the files in the source directory
-#' @param nchar the number of the most frequent characters that are kept
+#' @param chars chars to keep, if NULL (default, all chars are kept)
 #' @param returnSparseMatrix logical, whether to return a TermDocumentMatrix, defaults to TRUE. If FALSE, a list will be returned
 #' @param progress logical
 #' @param verbose logical
@@ -18,13 +16,8 @@ setGeneric("getNgrams", function(.Object, ...) standardGeneric("getNgrams"))
 #' noChars <- characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=3)
 #' ngramMatrix <- getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
 #' }
-setMethod("getNgrams", "character", function(.Object, charCount=NULL, nChar=10, returnSparseMatrix=TRUE, progress=TRUE, verbose=FALSE, mc=FALSE){
-  if (!is.null(nChar)){
-    charCount <- charCount[order(charCount, decreasing=F)]
-    charsToKeep <- names(charCount)[c(1:nChar)]
-  } else {
-    charsToKeep <- NULL
-  }
+setMethod("getNgrams", "character", function(.Object, chars=NULL, returnSparseMatrix=TRUE, progress=TRUE, verbose=FALSE, mc=FALSE){
+  charsToKeep <- chars
   .ngramCount <- function(filename, sourceDir, targetDir, verbose, param){
     charsToKeep <- param$charsToKeep
     n <- 5

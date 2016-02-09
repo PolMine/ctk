@@ -6,8 +6,8 @@
 \title{count characters in files}
 \usage{
 \S4method{characterCount}{character}(.Object, regexCharsToKeep = "[a-zA-Z]",
-  xml = TRUE, toLower = FALSE, progress = TRUE, mc = FALSE,
-  verbose = TRUE)
+  xml = TRUE, toLower = FALSE, decreasing = TRUE, progress = TRUE,
+  mc = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{.Object}{a directory with XML files}
