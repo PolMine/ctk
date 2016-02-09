@@ -41,6 +41,10 @@ setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
     parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "french-utf8.par")
   } else if (lang == "it"){
     parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "italian-utf8.par")
+  } else if (lang == "en"){
+    parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "english-utf8.par")
+  } else {
+    warning("the language is (not yet) supported")
   }
   cmdRaw <- c(
     "/opt/treetagger/bin/tree-tagger", "-sgml",

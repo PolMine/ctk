@@ -133,6 +133,7 @@ removeWhitespace <- function(x, rmBlankLines=TRUE){
     for (i in c(length(x):1)) if (grepl("^\\s*$", x)) xList[[i]] <- NULL
     x <- unlist(xList)    
   }
+  x
 }
 
 #' remove empty lines

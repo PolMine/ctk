@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Tools for importing corpora into the Open Corpus Workbench
-Version: 0.2.9
-Date: 2016-01-12
+Version: 0.2.11
+Date: 2016-02-06
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: R Wrapper for sentence segmentation, tagging, and CWB import
