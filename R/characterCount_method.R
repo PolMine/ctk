@@ -9,8 +9,9 @@ setGeneric("characterCount", function(.Object, ...) standardGeneric("characterCo
 #' @param mc defaults to FALSE
 #' @param verbose whether to be verbose
 #' @import XML
+#' @importMethodsFrom polmineR characterCount
 #' @export characterCount
-setMethod("characterCount", "character", function(.Object, regexCharsToKeep="[a-zA-Z]", xml=TRUE, toLower=FALSE, progress=TRUE, mc=FALSE, verbose=TRUE){
+setMethod("characterCount", "character", function(.Object, regexCharsToKeep="[a-zA-Z]", xml=TRUE, toLower=FALSE, decreasing=TRUE, progress=TRUE, mc=FALSE, verbose=TRUE){
   if (verbose == TRUE) message("... counting characters")
   .characterCount <- function(filename, sourceDir, targetDir, verbose, param=list(xml=TRUE, toLower=TRUE)){
     if (param$xml == TRUE){
@@ -35,5 +36,5 @@ setMethod("characterCount", "character", function(.Object, regexCharsToKeep="[a-
   } else {
     charCountFiltered <- charCount[grep(regexCharsToKeep, names(charCount))]
   }
-  return(charCountFiltered)
+  charCountFiltered[order(charCountFiltered, decreasing=decreasing)]
 })

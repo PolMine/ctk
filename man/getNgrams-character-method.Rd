@@ -5,12 +5,14 @@
 \alias{getNgrams,character-method}
 \title{get ngrams}
 \usage{
-\S4method{getNgrams}{character}(.Object, charCount = NULL, nChar = 10,
+\S4method{getNgrams}{character}(.Object, chars = NULL,
   returnSparseMatrix = TRUE, progress = TRUE, verbose = FALSE,
   mc = FALSE)
 }
 \arguments{
 \item{.Object}{the source directory}
+
+\item{chars}{chars to keep, if NULL (default, all chars are kept)}
 
 \item{returnSparseMatrix}{logical, whether to return a TermDocumentMatrix, defaults to TRUE. If FALSE, a list will be returned}
 
@@ -19,10 +21,6 @@
 \item{verbose}{logical}
 
 \item{mc}{logical, or the number of cores}
-
-\item{.charCount}{a count of the characters in the files in the source directory}
-
-\item{nchar}{the number of the most frequent characters that are kept}
 }
 \description{
 get ngrams

@@ -33,7 +33,7 @@ setMethod("getPotentialDuplicates", "character", function(.Object, dateElement="
       f=.getDate, sourceDir=.Object, targetDir=NULL,
       progress=progress, verbose=verbose, mc=mc,
       param=list(dateElement=dateElement, dateAttribute=dateAttribute)
-      ))
+    ))
   if (mc != FALSE) dates <- dates[filenames] # just to be sure that the order is correct
   if (verbose == TRUE) message("... getting files to be compared")
   filenameIndexSplittedByDate <- split(c(1:length(filenames)), f=dates)
@@ -69,78 +69,6 @@ setMethod("getPotentialDuplicates", "character", function(.Object, dateElement="
   return(docsToCompareMatrix)
 })
 
-
-#' get cosine similarity for a sparse matrix
-#' 
-#' @param x a simple_triplet_matrix
-#' @param select a simple_triplet_matrix
-#' @param method defaults to "cosine", no other method is implemented
-#' @param weighting defaults to "tfidf"
-#' @param progress logical
-#' @param verbose logical
-#' @param mc logical, or if numeric, providing number of cores
-documentSimilarity <- function(x, select=NULL, method="cosine", weighting="tfidf", progress=TRUE, verbose=FALSE, mc=FALSE){
-  # the sparse matrix needs to be inflated, the alternative is far too slow
-  if (verbose == TRUE) message("... applying weighting algorithm")
-  if (weighting %in% c("tfidf")){
-    if (requireNamespace("polmineR", quietly=TRUE)){
-      x <- polmineR::weigh(x, method=weight)
-    } else {
-      warning("package 'polmineR' is not installed, but necessary for this function")
-      stop()
-    }
-    
-  }
-  if (verbose == TRUE) message("... turning sparse matrix into ordinary matrix")
-  xNonsparse <- as.matrix(x)
-  if (verbose == TRUE) message("... calculating similarities")
-  nValuesMatrix <- length(select$i)
-  startTime <- Sys.time()
-  if (is.null(select)){
-    if (verbose == TRUE) message("... generating select matrix")
-    iIndex <- unlist(lapply(c(1:ncol(x)), function(i) rep(i, times= i-1)))
-    select <- simple_triplet_matrix(
-      i=iIndex,
-      j=unlist(lapply(c(2:ncol(x)), function(i) c(1:(i-1)))),
-      v=rep(NA, times=length(iIndex)),
-      ncol=ncol(x), nrow=ncol(x),
-      dimnames=list(colnames(x), colnames(x))
-    )
-  }
-  if (mc == FALSE){
-    .compareDocs <- function(i){
-      if (mc == FALSE) .progressBar(i, nValuesMatrix, showShare=TRUE, startTime=startTime)
-      a <- xNonsparse[,select$i[i]]
-      b <- xNonsparse[,select$j[i]]
-      cProd <- crossprod(a) * crossprod(b)
-      cProdSqrt <- sqrt(cProd)
-      crossprod(a, b)/cProdSqrt
-    }
-    cosineValues <- lapply(c(1:nValuesMatrix), .compareDocs)
-  } else if (mc == TRUE){
-    if (progress == FALSE){
-      cosineValues <- mclapply(c(1:nValuesMatrix), .compareDocs)  
-    } else if (progress == TRUE){
-      .compareDocs <- function(i, verbose, param){
-        if (mc == FALSE) .progressBar(i, param$nValuesMatrix, showShare=TRUE, startTime=param$startTime)
-        a <- param$xNonsparse[,param$select$i[i]]
-        b <- param$xNonsparse[,param$select$j[i]]
-        cProd <- crossprod(a) * crossprod(b)
-        cProdSqrt <- sqrt(cProd)
-        crossprod(a, b)/cProdSqrt
-      }
-      cosineValues <- parvapply(
-        index=c(1:nValuesMatrix), f=.compareDocs, verbose=TRUE, mc=3,
-        param=list(nValuesMatrix=nValuesMatrix, startTime=startTime, select=select, xNonsparse=xNonsparse)
-      )
-    }
-  }
-  if (verbose == TRUE) message("... preparing matrix to be returned")
-  similarityMatrix <- select
-  similarityMatrix$v <- unlist(cosineValues)
-  return(similarityMatrix)
-}
-
 setGeneric("getDuplicates", function(.Object, ...) standardGeneric("getDuplicates"))
 
 #' get duplicates 
@@ -148,11 +76,11 @@ setGeneric("getDuplicates", function(.Object, ...) standardGeneric("getDuplicate
 #' @examples 
 #' \dontrun{
 #' xmlDir <- "/Users/blaette/Lab/repos/keywords/data/figaro/xml"
-#' charCount <- characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=3)
-#' ngramMatrix <- getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
+#' charCount <- ctk::characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=3)
+#' ngramMatrix <- ctk::getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
 #' ngramMatrixWeighed <- polmineR::weigh(ngramMatrix, method="tfidf")
 #' docsToCompareMatrix <- getPotentialDuplicates(xmlDir, reduce=TRUE, progress=TRUE, verbose=TRUE, mc=3)
-#' similarityMatrix <- documentSimilarity(x=ngramMatrixWeighed, select=docsToCompareMatrix, verbose=TRUE, progress=TRUE, mc=3)
+#' similarityMatrix <- polmineR::similarity(x=ngramMatrixWeighed, select=docsToCompareMatrix, verbose=TRUE, progress=TRUE, mc=3)
 #' duplicates <- getDuplicates(xmlDir, similarityMatrix=similarityMatrix, progress=TRUE, mc=3, verbose=TRUE)
 #' annotatedXML <- annotateDuplicates(
 #'   .Object=xmlDir, targetDir=NULL,
@@ -207,7 +135,7 @@ setMethod("getDuplicates", "character", function(.Object, similarityMatrix, thre
   duplicateFinal <- as.data.frame(
     do.call(rbind, strsplit(duplicateUnique, "\t")),
     stringsAsFactor=FALSE
-    )
+  )
   duplicateFinal[,1] <- as.character(as.vector(duplicateFinal[,1]))
   duplicateFinal[,2] <- as.character(as.vector(duplicateFinal[,2]))
   duplicateFinal[,3] <- as.numeric(as.vector(duplicateFinal[,3]))
@@ -260,5 +188,5 @@ setMethod("annotateDuplicates", "character", function(.Object, targetDir, duplic
     f=.annotateDuplicate, sourceDir=.Object, targetDir=targetDir,
     verbose=verbose, mc=mc, progress=progress,
     param=list(newAttributes=newAttributes)
-    )
+  )
 })

@@ -2,7 +2,7 @@ Package: ctk
 Type: Package
 Title: Tools for importing corpora into the Open Corpus Workbench
 Version: 0.2.11
-Date: 2016-02-06
+Date: 2016-02-09
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: R Wrapper for sentence segmentation, tagging, and CWB import
@@ -20,6 +20,7 @@ Collate:
     'adjustEncoding_method.R'
     'anyToXml_method.R'
     'as.package_function.R'
+    'as.xml_method.R'
     'characterCount_method.R'
     'checkDirs_method.R'
     'ctkPipe_class_methods.R'
@@ -46,6 +47,7 @@ Collate:
     'sAttributeList_method.R'
     'setPaths_method.R'
     'subset_method.R'
+    'tag_method.R'
     'tokenizeSentences_method.R'
     'tokenize_method.R'
     'treetagger_method.R'
