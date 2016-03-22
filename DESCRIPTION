@@ -55,5 +55,5 @@ Collate:
     'validate_method.R'
     'vrtCheck_method.R'
     'xslt_method.R'
-    'consolidate-method.R'
+    'consolidate_method.R'
 RoxygenNote: 5.0.1
