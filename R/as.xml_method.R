@@ -10,6 +10,7 @@
 #' @param verbose logical
 #' @name as.xml
 #' @rdname as.xml-method 
+#' @exportMethod as.xml
 setGeneric("as.xml", function(.Object, ...) standardGeneric("as.xml"))
 
 #' @rdname as.xml-method 

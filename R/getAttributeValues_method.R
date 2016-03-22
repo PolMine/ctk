@@ -60,8 +60,8 @@ setMethod("getAttributeValues", "character", function(.Object, element, attrs, u
   retval
 })
 
-setMethod("getAttributeValues", "ctkPipe", function(.Object, sourceDir, element, attribute, unique=TRUE, mc=FALSE){
-  check(file.path(.Object@projectDir, sourceDir),
-        element=element, attribute=attribute, unique=unique, mc=mc
+setMethod("getAttributeValues", "ctkPipe", function(.Object, sourceDir, element, attrs, unique=TRUE, mc=FALSE){
+  getAttributeValues(file.path(.Object@projectDir, sourceDir),
+        element=element, attrs=attrs, unique=unique, mc=mc
         )
 })
