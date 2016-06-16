@@ -40,4 +40,26 @@ setMethod("as.xml", "data.frame", function(.Object, meta, body, file, root="coll
   )
 })
 
-
+#' @import XML
+#' @rdname as.xml-method
+setMethod("as.xml", "list", function(.Object, filename=NULL){
+  doc <- xmlParse("<text></text>", useInternalNodes=T, asText=T)
+  docRoot <- xmlRoot(doc)
+  xmlAttrs(docRoot) <- .Object[["meta"]]
+  dummy <- lapply(
+    c(1:length(.Object[["body"]])),
+    function(i){
+      addChildren(docRoot, newXMLNode("p", attrs=c(type=names(.Object[["body"]])[i]), .Object[["body"]][i]))
+    })
+  xmlRaw <- saveXML(
+    doc, prefix='<?xml version="1.0" encoding="UTF-8"?>\n',
+    indent=T, encoding="UTF-8"
+  )
+  xmlDoc <- unlist(strsplit(xmlRaw, "\\n\\s*"))
+  if (is.null(filename)){
+    return(xmlDoc)
+  } else {
+    cat(xmlDoc, file=filename)
+    return(NULL)
+  }
+})

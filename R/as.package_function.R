@@ -42,10 +42,6 @@
 #' @param description short description of the data package
 #' @param licence the license
 #' @param verbose whether to be verbose
-#' @examples 
-#' \dontrun{
-#' as.package("ARENEN", targetDir="/home/blaette/cwb.arenen", author="Andreas Blaette")
-#' }
 #' @export as.package
 #' @rdname as.package
 #' @name as.package

@@ -71,9 +71,8 @@ dirApply <- function(
       }
       toReturn
     })
-    if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
-      class(retval) <- "timePerFile"
-    }
+    # for (i in rev(which(sapply(retval, is.null) == TRUE))) retval[i] <- NULL
+    if (unique(lapply(retval, function(x) class(x)[1])) == "difftime") class(retval) <- "timePerFile"
     names(retval) <- filenames
     return(retval)
   } else if (mc == TRUE || is.numeric(mc)){
@@ -138,6 +137,7 @@ dirApply <- function(
       .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
       dummy <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
       retval <- unlist(retval, recursive = FALSE)
+      # for (i in rev(which(sapply(retval, is.null) == TRUE))) retval[i] <- NULL
       if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
         class(retval) <- "timePerFile"
       }

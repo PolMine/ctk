@@ -18,13 +18,15 @@
 setGeneric("ner", function(.Object, ...) standardGeneric("ner"))
 
 
-.nerWorker <- function(filename, sourceDir, targetDir, ...){
+.nerWorker <- function(filename, sourceDir, targetDir, param, verbose){
   pathStanfordNer <- "/opt/stanfordNLP/stanford-ner-2015-01-30/stanford-ner.jar"
   # classifier <- "/opt/stanfordNLP/stanford-ner-2015-01-30/classifiers/english.nowiki.3class.distsim.crf.ser.gz"
-  # classifier <- "/opt/stanfordNLP/stanford-ner-2015-01-30/classifiers/hgc_175m_600.crf.ser.gz"
-  classifier <- "/opt/stanfordNLP/stanford-ner-2015-01-30/classifiers/dewac_175m_600.crf.ser.gz"
+  classifier <- "/opt/stanfordNLP/stanford-ner-2015-01-30/classifiers/hgc_175m_600.crf.ser.gz"
+  # classifier <- "/opt/stanfordNLP/stanford-ner-2015-01-30/classifiers/dewac_175m_600.crf.ser.gz"
   cmdVector <- c(
-    "/opt/jdk1.8.0_45/bin/java", "-cp", pathStanfordNer, "-mx600m",
+#    "/opt/jdk1.8.0_45/bin/java",
+    "/usr/bin/java",
+    "-cp", pathStanfordNer, "-mx2000m",
     "edu.stanford.nlp.ie.crf.CRFClassifier",
     "-loadClassifier", 
     classifier,
