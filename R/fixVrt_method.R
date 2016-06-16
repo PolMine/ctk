@@ -15,12 +15,20 @@ setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
 
 .repairVrtFile <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
   if (!is.null(targetDir)) startTime <- Sys.time()
+  if ("encoding" %in% names(param)){
+    fileEncoding <- param[["encoding"]]
+  } else {
+    fileEncoding <- "UTF-8"
+  }
   if (is.null(sourceDir)){
     vrt <- strsplit(filename, "\n")[[1]]
   } else {
     vrt <- scan(
       file.path(sourceDir, filename), sep="\n", what="character",
-      blank.lines.skip=TRUE, quiet=ifelse(verbose==TRUE, FALSE, TRUE))    
+      blank.lines.skip=TRUE, quiet=ifelse(verbose==TRUE, FALSE, TRUE),
+      fileEncoding=fileEncoding
+      
+      )    
   }
   vrt <- .repairVrtCharacterVector(vrt, verbose=verbose)
   if (!is.null(targetDir)){
@@ -69,12 +77,13 @@ setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
 }
 
 #' @rdname ctkPipe
-setMethod("fixVrt", "ctkPipe", function(.Object, sourceDir, targetDir, ...){
+setMethod("fixVrt", "ctkPipe", function(.Object, sourceDir, targetDir, encoding="UTF-8", ...){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.repairVrtFile,
     sourceDir=file.path(.Object@projectDir, sourceDir),
     targetDir=file.path(.Object@projectDir, targetDir),
+    param=list(encoding=encoding),
     ...
     )
 })
