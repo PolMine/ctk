@@ -2,6 +2,7 @@
 NULL
 
 
+#' @rdname encode-method
 setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 
 #' import into CWB
@@ -69,7 +70,7 @@ setMethod("encode", "character", function(.Object, corpus="FOO", cwbRegistry, sA
 #' @param corpus CWB corpus name that shall be created
 #' @param xml logical
 #' @exportMethod encode
-#' @rdname ctkPipe
+#' @rdname encode-method
 setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml=TRUE, verbose=TRUE, ...){
   if (length(.Object@sAttributes) == 0) {
     if (verbose == TRUE) message("... getting sAttributes")
@@ -80,7 +81,7 @@ setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml=TRUE, ve
 })
 
 
-#' @rdname encode
+#' @rdname encode-method
 setMethod("encode", "Regions", function(.Object, filename = NULL, verbose = TRUE){
   cposDT <- .Object@cpos[!is.na(cpos_right)]
   cposDT[, "index" := c(1:nrow(cposDT)), with = FALSE]
