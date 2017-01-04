@@ -10,7 +10,7 @@ setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
     file=file.path(sourceDir, filename),
     what="character", sep="\n",
     blank.lines.skip=TRUE,
-    quiet=TRUE
+    quiet=TRUE, fileEncoding=param[["encoding"]]
   )
   for (replacement in replacements) doc <- gsub(replacement[1], replacement[2], doc)
   cat(
@@ -27,9 +27,9 @@ setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
 #' @exportMethod findReplace
 #' @rdname ctkPipe
 setMethod("findReplace", "ctkPipe", function(
-  object, sourceDir, targetDir, replacements,
-  pattern=NULL, mc=FALSE, progress=TRUE, verbose=FALSE, sample=FALSE,
-  filenames=NULL, continue=FALSE, failsafe=FALSE, ...
+  object, sourceDir, targetDir,
+  replacements, encoding="UTF-8",
+  ...
   ){
   checkDirs(object, sourceDir, targetDir)
   # assign("replacements", replacements, envir=.GlobalEnv)
@@ -37,8 +37,8 @@ setMethod("findReplace", "ctkPipe", function(
     f=.findReplace,
     sourceDir=file.path(object@projectDir, sourceDir),
     targetDir=file.path(object@projectDir, targetDir),
-    pattern=pattern, mc=mc, progress=progress, verbose=verbose, sample=sample,
-    filenames=filenames, continue=continue, failsafe=failsafe, param=list(replacements=replacements)
+    param=list(replacements=replacements, encoding=encoding),
+    ...
     )
 })
 
