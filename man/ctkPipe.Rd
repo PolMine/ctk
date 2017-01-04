@@ -5,10 +5,10 @@
 \alias{adjustEncoding}
 \alias{adjustEncoding,ctkPipe-method}
 \alias{ctkPipe}
-\alias{cwbImport}
-\alias{cwbImport,ctkPipe-method}
 \alias{describeDir}
 \alias{describeDir,ctkPipe-method}
+\alias{encode}
+\alias{encode,ctkPipe-method}
 \alias{findReplace}
 \alias{findReplace,ctkPipe-method}
 \alias{fixVrt,ctkPipe-method}
@@ -35,7 +35,7 @@ ctkPipe(projectDir)
 
 \S4method{summary}{ctkPipe}(object)
 
-\S4method{cwbImport}{ctkPipe}(.Object, sourceDir, corpus, xml = TRUE,
+\S4method{encode}{ctkPipe}(.Object, sourceDir, corpus, xml = TRUE,
   verbose = TRUE, ...)
 
 \S4method{describeDir}{ctkPipe}(object, dirDesc)
@@ -45,7 +45,8 @@ ctkPipe(projectDir)
   sample = FALSE, filenames = NULL, continue = FALSE, failsafe = FALSE,
   ...)
 
-\S4method{fixVrt}{ctkPipe}(.Object, sourceDir, targetDir, ...)
+\S4method{fixVrt}{ctkPipe}(.Object, sourceDir, targetDir, encoding = "UTF-8",
+  ...)
 
 \S4method{init}{ctkPipe}(object)
 

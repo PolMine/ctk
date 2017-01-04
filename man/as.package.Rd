@@ -35,9 +35,4 @@ unpack(pkg, verbose = TRUE)
 \description{
 create R data package with corpus
 }
-\examples{
-\dontrun{
-as.package("ARENEN", targetDir="/home/blaette/cwb.arenen", author="Andreas Blaette")
-}
-}
 

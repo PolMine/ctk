@@ -34,8 +34,8 @@ setClass("ctkPipe",
 #' @return a ctkPipe object
 #' @rdname ctkPipe
 #' @aliases treetagger treetagger,ctkPipe-method tokenizeSentences
-#'   tokenizeSentences,ctkPipe-method xslt xslt,ctkPipe-method cwbImport
-#'   cwbImport,ctkPipe-method findReplace
+#'   tokenizeSentences,ctkPipe-method xslt xslt,ctkPipe-method encode
+#'   encode,ctkPipe-method findReplace
 #'   findReplace,ctkPipe-method describeDir describeDir,ctkPipe-method 
 #'   sAttributeList
 #'   sAttributeList,ctkPipe-method adjustEncoding
