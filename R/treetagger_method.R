@@ -99,7 +99,7 @@ setMethod("treetagger", "ctkPipe", function(
   retval
 })
 
-setMethod("treetagger", "character", function(.Object, lang="de", fix=TRUE){
-  vrtRaw <- .treetaggerWorker(filename=.Object, param=list(lang=lang))
+setMethod("treetagger", "character", function(.Object, lang="de", fix = TRUE){
+  vrtRaw <- .treetaggerWorker(filename = .Object, param = list(lang=lang))
   fixVrt(vrtRaw)
 })

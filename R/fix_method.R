@@ -1,18 +1,3 @@
-#' correct/polish vrt files
-#' 
-#' The treetagger wrapper script results in some faulty lines - this is corrected here.
-#' 
-#' @param .Object a character vector providing a directory with vrt files
-#' @param targetDir a character vector
-#' @param mc whether to use multicore
-#' @param verbose logicel, defaults to TRUE
-#' @exportMethod fixVrt
-#' @aliases fixVrt-method fixVrt
-#' @rdname fixVrt-method
-setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
-
-
-
 .repairVrtFile <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
   if (!is.null(targetDir)) startTime <- Sys.time()
   if ("encoding" %in% names(param)){
@@ -76,19 +61,30 @@ setGeneric("fixVrt", function(.Object, ...) standardGeneric("fixVrt"))
   return(vrt7)
 }
 
+#' correct/polish vrt files
+#' 
+#' The treetagger wrapper script results in some faulty lines - this is corrected here.
+#' 
+#' @param x a character vector providing a directory with vrt files
+#' @param targetDir a character vector
+#' @param mc whether to use multicore
+#' @param verbose logicel, defaults to TRUE
+#' @exportMethod fix
+#' @aliases fix-method fix
+#' @rdname fix-method
 #' @rdname ctkPipe
-setMethod("fixVrt", "ctkPipe", function(.Object, sourceDir, targetDir, encoding="UTF-8", ...){
-  checkDirs(.Object, sourceDir, targetDir)
+setMethod("fix", "ctkPipe", function(x, sourceDir, targetDir, encoding="UTF-8", ...){
+  checkDirs(x, sourceDir, targetDir)
   dirApply(
     f=.repairVrtFile,
-    sourceDir=file.path(.Object@projectDir, sourceDir),
-    targetDir=file.path(.Object@projectDir, targetDir),
+    sourceDir=file.path(x@projectDir, sourceDir),
+    targetDir=file.path(x@projectDir, targetDir),
     param=list(encoding=encoding),
     ...
     )
 })
 
-setMethod("fixVrt", "character", function(.Object){
-  .repairVrtFile(.Object)
+setMethod("fix", "character", function(x){
+  .repairVrtFile(x)
 })
 

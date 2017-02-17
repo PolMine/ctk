@@ -1,6 +1,3 @@
-#' @include ctkPipe_class.R
-NULL
-
 #' apply iconv to files in a directory
 #' 
 #' @param .Object a character string providing a directory
@@ -10,10 +7,15 @@ NULL
 #' @param mc use multicore
 #' @param progress whether to display progress bar
 #' @return something
-#' @rdname adjustEncoding-method
-#' @exportMethod adjustEncoding
+#' @rdname recode-method
+#' @exportMethod recode
 #' @importFrom stringi stri_enc_detect
-setGeneric("adjustEncoding", function(.Object, ...) standardGeneric("adjustEncoding"))
+setGeneric("recode", function(.Object, ... ) standardGeneric("recode"))
+
+
+#' @include ctkPipe_class.R
+NULL
+
 
 .getEncoding <- function(filename, sourceDir){
   fileRetval <- system(paste("file", "--mime", file.path(sourceDir, filename), collapse=" "), intern=TRUE)
@@ -46,7 +48,7 @@ setGeneric("adjustEncoding", function(.Object, ...) standardGeneric("adjustEncod
   encoding
 }
 
-.iconvWorker <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()) {
+.iconvWorker <- function(filename, sourceDir, targetDir = NULL, verbose = FALSE, param=list()) {
   log <- param[["log"]]
   startTime <- Sys.time()
   if (is.null(targetDir)) targetDir <- sourceDir
@@ -76,20 +78,24 @@ setGeneric("adjustEncoding", function(.Object, ...) standardGeneric("adjustEncod
   system(cmdIconv)
   if (isXml == TRUE){
     cmdSedRaw <- c(
-      "sed", "-i",
-#      "''",
+      "sed",
       paste("'1s/", from, "/", to, "/'", sep=""),
-      file.path(targetDir, filename)
+      file.path(targetDir, filename), ">",
+      paste(file.path(targetDir, filename), "new", sep = ".")
     )
     cmdSed <- paste(cmdSedRaw, collapse=" ")
     system(cmdSed)
+    file.remove(file.path(targetDir, filename))
+    file.rename(
+      from = paste(file.path(targetDir, filename), "new", sep = "."),
+      to = file.path(targetDir, filename)
+    )
   }
   return(Sys.time()-startTime)
 }
 
-
-#' @rdname adjustEncoding-method
-setMethod("adjustEncoding", "character", function(.Object, targetDir=NULL, from=NULL, to, xml=FALSE, ...){  
+#' @rdname recode-method
+setMethod("recode", "character", function(.Object, targetDir=NULL, from=NULL, to, xml=FALSE, ...){  
   availableEncodings <- gsub("//", "", system("iconv -l", intern=TRUE))
   dirApply(
     f=.iconvWorker,
@@ -99,8 +105,8 @@ setMethod("adjustEncoding", "character", function(.Object, targetDir=NULL, from=
   )
 })
 
-#' @rdname adjustEncoding-method
-setMethod("adjustEncoding", "ctkPipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
+#' @rdname recode-method
+setMethod("recode", "ctkPipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.iconvWorker,
