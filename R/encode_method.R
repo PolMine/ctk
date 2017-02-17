@@ -11,14 +11,14 @@ setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 #' 
 #' @param .Object a character vector
 #' @param corpus the corpus name
-#' @param cwbRegistry the directory of the CWB registry
+#' @param registry the directory of the CWB registry
 #' @param sAttributes a list, use sAttributes-method
 #' @param xml whether files are XML
 #' @param verbose defaults to TRUE
 #' @rdname encode-method
 #' @exportMethod encode
-setMethod("encode", "character", function(.Object, corpus="FOO", cwbRegistry, sAttributes, xml=TRUE, verbose=TRUE){
-  tmp <- unlist(strsplit(cwbRegistry, "/"))
+setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttributes, xml=TRUE, verbose=TRUE){
+  tmp <- unlist(strsplit(registry, "/"))
   cwbDirs <- list.dirs(paste("/", paste(tmp[2:(length(tmp)-1)], collapse="/"), sep=""), recursive=FALSE)
   indexedCorpusDir <- cwbDirs[grep("indexed", cwbDirs)]
   if (tolower(corpus) %in% list.dirs(indexedCorpusDir, full.names=FALSE, recursive=FALSE)){
@@ -44,7 +44,7 @@ setMethod("encode", "character", function(.Object, corpus="FOO", cwbRegistry, sA
     "cwb-encode",
     "-d", file.path(indexedCorpusDir, tolower(corpus)),
     "-F", .Object,
-    "-R", file.path(cwbRegistry, tolower(corpus)),
+    "-R", file.path(registry, tolower(corpus)),
     "-P", "pos",
     "-P", "lemma",
     sAttrCmd
@@ -56,7 +56,7 @@ setMethod("encode", "character", function(.Object, corpus="FOO", cwbRegistry, sA
   ret <- system(cmd)
   if (ret == 0) {
     if (verbose == TRUE) message("... cwb-make")
-    cwbMakeCmd <- paste("cwb-make -V", toupper(corpus), "-r", cwbRegistry)
+    cwbMakeCmd <- paste("cwb-make -V", toupper(corpus), "-r", registry)
     print(cwbMakeCmd)
     system(cwbMakeCmd)
   } else {
@@ -71,12 +71,12 @@ setMethod("encode", "character", function(.Object, corpus="FOO", cwbRegistry, sA
 #' @param xml logical
 #' @exportMethod encode
 #' @rdname encode-method
-setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml=TRUE, verbose=TRUE, ...){
+setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml = TRUE, verbose=TRUE, ...){
   if (length(.Object@sAttributes) == 0) {
     if (verbose == TRUE) message("... getting sAttributes")
     .Object <- sAttributeList(.Object, sourceDir=sourceDir, ...) 
   }
-  encode(.Object=file.path(.Object@projectDir, sourceDir), corpus=corpus, cwbRegistry=.Object@cwbRegistry, sAttributes=.Object@sAttributes, xml=xml)
+  encode(.Object=file.path(.Object@projectDir, sourceDir), corpus=corpus, registry=.Object@registry, sAttributes=.Object@sAttributes, xml=xml)
   return(.Object)
 })
 

@@ -22,9 +22,9 @@ setMethod("summary", "ctkPipe", function(object){
     function(dir) length(list.files(file.path(object@projectDir, dir)))
   )
   retval <- data.frame(
-    row.names=names(noFiles),
-    noFiles=noFiles,
-    describtion=object@subdirs[names(noFiles)]
+    row.names = names(noFiles),
+    no_files = noFiles,
+    description = object@subdirs[names(noFiles)]
     )
   return(retval)
 })

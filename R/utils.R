@@ -115,7 +115,7 @@
 }
 
 .setPaths <- function(.Object){
-  if ("CORPUS_REGISTRY" %in% names(Sys.getenv())) .Object@cwbRegistry <- Sys.getenv("CORPUS_REGISTRY")
+  if ("CORPUS_REGISTRY" %in% names(Sys.getenv())) .Object@registry <- Sys.getenv("CORPUS_REGISTRY")
   if ("PATH_SAXON" %in% names(Sys.getenv())) .Object@saxonPath <- Sys.getenv("PATH_SAXON")
   if ("PATH_TREETAGGER" %in% names(Sys.getenv())) .Object@treetaggerPath <- Sys.getenv("PATH_TREETAGGER")  
   return(.Object)
@@ -158,7 +158,9 @@ removeEmptyLines <- function(x){
 #' @name normalizeGermanDate
 normalizeGermanDate <- function(dateRaw){
   monthToNumber <- c(
-    Januar=1, Februar=2, März=3, April=4, Mai=5, Juni=6, Juli=7, August=8, September=9, Oktober=10, November=11, Dezember=12
+    Januar = 1, Februar = 2, März = 3, April = 4,
+    Mai = 5, Juni = 6, Juli = 7, August = 8,
+    September = 9, Oktober = 10, November = 11, Dezember = 12
   )
   dateRegex <- paste(
     "^\\s*(\\d+)\\.\\s+(",
@@ -170,7 +172,7 @@ normalizeGermanDate <- function(dateRaw){
     regexMatch[4],
     sprintf("%02d", as.numeric(monthToNumber[regexMatch[3]])),
     sprintf("%02d", as.numeric(regexMatch[2])),
-    sep="-"
+    sep = "-"
   )
 }
 
