@@ -16,14 +16,13 @@ Suggests:
 LazyData: yes
 License: CC BY-NC-SA 4.0 | file LICENSE
 Collate:
-    'ctkPipe_class.R'
-    'recode_method.R'
     'anyToXml_method.R'
     'as.package_function.R'
     'as.xml_method.R'
     'characterCount_method.R'
     'checkDirs_method.R'
     'consolidate_method.R'
+    'ctkPipe_class.R'
     'ctkPipe_class_methods.R'
     'ctk_package.R'
     'describeDir_method.R'
@@ -41,6 +40,7 @@ Collate:
     'missingFiles_method.R'
     'monthsToNumeric.R'
     'ner_method.R'
+    'recode_method.R'
     'regexContext_function.R'
     'regex_method.R'
     'replaceInvalidCharacters_function.R'

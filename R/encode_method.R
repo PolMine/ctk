@@ -141,3 +141,4 @@ setMethod("encode", "Regions", function(.Object, filename = NULL, verbose = TRUE
   cmdRegedit <- c("cwb-regedit", .Object@corpus, ":add", ":s", "annotation", "annotation_tag")
   system(paste(cmdRegedit, sep = " ", collapse = " "))
 })
+
