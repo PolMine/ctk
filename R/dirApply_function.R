@@ -36,9 +36,9 @@
 #' @name dirApply
 #' @import parallel
 dirApply <- function(
-  f, sourceDir, targetDir=NULL,
-  pattern=NULL, mc=FALSE, progress=TRUE, verbose=FALSE,
-  sample=FALSE, filenames=NULL, continue=FALSE, failsafe=FALSE,
+  f, sourceDir, targetDir = NULL,
+  pattern = NULL, mc = FALSE, progress = TRUE, verbose = FALSE,
+  sample = FALSE, filenames = NULL, continue = FALSE, failsafe = FALSE,
   param=list()
   ){
   if (is.null(filenames)) filenames <- list.files(sourceDir, pattern)

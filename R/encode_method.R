@@ -17,7 +17,7 @@ setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 #' @param verbose defaults to TRUE
 #' @rdname encode-method
 #' @exportMethod encode
-setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttributes, xml=TRUE, verbose=TRUE){
+setMethod("encode", "character", function(.Object, corpus = "FOO", registry, sAttributes, encoding, xml = TRUE, verbose = TRUE){
   tmp <- unlist(strsplit(registry, "/"))
   cwbDirs <- list.dirs(paste("/", paste(tmp[2:(length(tmp)-1)], collapse="/"), sep=""), recursive=FALSE)
   indexedCorpusDir <- cwbDirs[grep("indexed", cwbDirs)]
@@ -47,6 +47,7 @@ setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttr
     "-R", file.path(registry, tolower(corpus)),
     "-P", "pos",
     "-P", "lemma",
+    "-c", encoding,
     sAttrCmd
   )
   if (xml == TRUE) cmd <- c(cmd, "-xsB")
@@ -71,12 +72,12 @@ setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttr
 #' @param xml logical
 #' @exportMethod encode
 #' @rdname encode-method
-setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml = TRUE, verbose=TRUE, ...){
+setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, encoding, xml = TRUE, verbose=TRUE, ...){
   if (length(.Object@sAttributes) == 0) {
     if (verbose == TRUE) message("... getting sAttributes")
     .Object <- sAttributeList(.Object, sourceDir=sourceDir, ...) 
   }
-  encode(.Object=file.path(.Object@projectDir, sourceDir), corpus=corpus, registry=.Object@registry, sAttributes=.Object@sAttributes, xml=xml)
+  encode(.Object=file.path(.Object@projectDir, sourceDir), corpus = corpus, registry = .Object@registry, encoding = encoding, sAttributes = .Object@sAttributes, xml=xml)
   return(.Object)
 })
 

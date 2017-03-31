@@ -16,6 +16,7 @@ setGeneric("getFiles", function(.Object, ...) standardGeneric("getFiles"))
 #' @param failsafe whether to be robust
 #' @rdname getFiles-method
 #' @name getFiles
+#' @import pbapply
 setMethod(
   "getFiles", "ctkPipe",
   function(
@@ -38,6 +39,7 @@ setMethod(
     })
   )
   filesToGetList <- strsplit(filesToGet, split="/")
+  message("Files to get: ", length(filesToGetList))
   if (rectify == TRUE){
     targetFilenames <- sapply(
       filesToGetList,
@@ -54,27 +56,33 @@ setMethod(
         x[last] <- gsub("html$", ".html", x[last], perl=T)
         x[last] <- gsub("(TXT|txt)$", ".txt", x[last], perl=T)
         gsub("tei$", ".tei", x[last], perl=T)
+        gsub("xml$", ".xml", x[last], perl = TRUE)
       })
   } else {
-    targetFilenames <- sapply(filesToGetList, function(x) x[length(x)])
+    targetFilenames <- sapply(filesToGet, basename)
   }
   if (length(filesToGet) > 0){
-    foo <- sapply(
+    foo <- pbapply::pblapply(
       c(1: length(filesToGet)),
       function(i) {
         fileToGet <- filesToGet[i]
         targetFilename <- targetFilenames[i]
-        if (progress == T) .progressBar(i=i, total=length(filesToGet))
         if (verbose == T) message("... getting ", targetFilename)
+        targetFile <- file.path(.Object@projectDir, targetDir, targetFilename)
         if (failsafe == FALSE){
-          file.copy(from=fileToGet, to=file.path(.Object@projectDir, targetDir, targetFilename))        
+          file.copy(from=fileToGet, to = targetFile)
         } else {
           try(
-            file.copy(from=fileToGet, to=file.path(.Object@projectDir, targetDir, targetFilename))
+            file.copy(from=fileToGet, to= targetFile)
             )
         }
-        
+        return(fileToGet)
       })    
+    message("Number of files copied: ", length(foo))
+    invisible(targetFilenames)
+  } else {
+    message("no files to get")
+    return(character())
   }
-  return(length(foo))
+  
 })

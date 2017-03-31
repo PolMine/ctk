@@ -21,8 +21,11 @@ setGeneric("getAttributeValues", function(.Object, ...) standardGeneric("getAttr
 #' @return If attrs is a character vector of length 1, a character vector, a matrix otherwise
 #' @import XML
 #' @exportMethod getAttributeValues
-setMethod("getAttributeValues", "character", function(.Object, element, attrs, unique=TRUE, pattern="xml", mc=FALSE, progress=TRUE, verbose=FALSE, sample=FALSE, filenames=NULL){
-  .getAttributes <- function(filename, sourceDir, targetDir=NULL, verbose=NULL, param){
+setMethod("getAttributeValues", "character", function(
+  .Object, element, attrs, unique=TRUE, pattern = "xml",
+  mc = FALSE, progress = TRUE, verbose = FALSE, sample = FALSE, filenames = NULL
+  ){
+  .getAttributes <- function(filename, sourceDir, targetDir = NULL, verbose = NULL, param){
     element <- param[["element"]]
     attrs <- param[["attrs"]]
     doc <- xmlTreeParse(file.path(sourceDir, filename), useInternalNodes=TRUE)
@@ -36,8 +39,8 @@ setMethod("getAttributeValues", "character", function(.Object, element, attrs, u
     attributeValues
   }
   attributeValues <- dirApply(
-    f=.getAttributes, sourceDir=.Object, targetDir=NULL, param=list(element=element, attrs=attrs),
-    pattern=pattern, mc=mc, progress=progress, verbose=verbose, sample=sample, filenames=filenames
+    f = .getAttributes, sourceDir = .Object, targetDir = NULL, param = list(element = element, attrs = attrs),
+    pattern = pattern, mc = mc, progress = progress, verbose = verbose, sample = sample, filenames = filenames
     )
   if (unique == TRUE){
     if (length(attrs) == 1){
@@ -60,8 +63,9 @@ setMethod("getAttributeValues", "character", function(.Object, element, attrs, u
   retval
 })
 
-setMethod("getAttributeValues", "ctkPipe", function(.Object, sourceDir, element, attrs, unique=TRUE, mc=FALSE){
-  getAttributeValues(file.path(.Object@projectDir, sourceDir),
-        element=element, attrs=attrs, unique=unique, mc=mc
-        )
+setMethod("getAttributeValues", "ctkPipe", function(.Object, sourceDir, pattern, element, attrs, unique = TRUE, mc = FALSE, progress = TRUE){
+  getAttributeValues(
+    .Object = file.path(.Object@projectDir, sourceDir), pattern = pattern,
+    element = element, attrs = attrs, unique = unique, mc = mc, progress = progress
+  )
 })
