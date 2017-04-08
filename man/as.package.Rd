@@ -18,7 +18,7 @@ unpack(pkg, verbose = TRUE)
 
 \item{author}{the author of the package}
 
-\item{pkg}{package name}
+\item{pkg}{package name (may not include special chars, no _)}
 
 \item{version}{the version number of the corpus}
 

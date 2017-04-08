@@ -10,8 +10,8 @@
 \usage{
 encode(.Object, ...)
 
-\S4method{encode}{character}(.Object, corpus = "FOO", cwbRegistry,
-  sAttributes, xml = TRUE, verbose = TRUE)
+\S4method{encode}{character}(.Object, corpus = "FOO", registry, sAttributes,
+  xml = TRUE, verbose = TRUE)
 
 \S4method{encode}{ctkPipe}(.Object, sourceDir, corpus, xml = TRUE,
   verbose = TRUE, ...)
@@ -23,7 +23,7 @@ encode(.Object, ...)
 
 \item{corpus}{the corpus name}
 
-\item{cwbRegistry}{the directory of the CWB registry}
+\item{registry}{the directory of the CWB registry}
 
 \item{sAttributes}{a list, use sAttributes-method}
 
