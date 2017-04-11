@@ -1,4 +1,11 @@
-#' tokenize files in a dir (using StanfordNLP)
+#' Tokenize files.
+#' 
+#' Tokenize (XML) files with one standard tool (treetagger, stanfordNLP, openNLP).
+#' 
+#' One potential problem with the perl-tokenizer that comes with the treetagger
+#' is that the output is not valid XML. It is necessary to fix the XML with a 
+#' shell command such as \code{for i in $(ls); do sed 's/\xC2\xA0/ /g' $i > ../tok2/$i; done}.
+#' The XML may still not be valid ("&" etc.), so fix method is still necessary.
 #' 
 #' @param .Object a ctk object
 #' @param sourceDir the source directory

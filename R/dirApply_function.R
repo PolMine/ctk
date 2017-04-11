@@ -35,6 +35,7 @@
 #' @rdname dirApply
 #' @name dirApply
 #' @import parallel
+#' @importFrom pbapply pblapply
 dirApply <- function(
   f, sourceDir, targetDir = NULL,
   pattern = NULL, mc = FALSE, progress = TRUE, verbose = FALSE,
@@ -93,55 +94,64 @@ dirApply <- function(
         mc.cores=noCores
         )  
     } else if (progress == TRUE){
-      breaksRaw <- unlist(lapply(c(1:noCores), function(x) rep(x, times=trunc(length(filenames) / noCores))))
-      breaks <- c(breaksRaw, rep(noCores, times=length(filenames)-length(breaksRaw)))
-      fileChunks <- split(filenames, breaks)
-      dummyDir <- tempdir()
-      filesRemoved <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
-      noFilesRemoved <- length(filesRemoved)
-      if (noFilesRemoved > 0 && verbose == TRUE){
-        message ("... logfiles were still present im tempdir, ", length(filesRemoved), " files removed")  
-      }
-      fWrapped <- function(filename, sourceDir, targetDir, verbose, param){
-        cat("", file=file.path(dummyDir, paste(filename, "multicore", sep=".")))
-        f(filename, sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=param)
-      }
-      if (length(parallel:::children()) > 0){
-        warning("there have been zombie processes collected with mccollect()")
-        graveyard <- mccollect()
-      }
-      threadNames <- paste("thread", c(1:noCores), sep="")
-      startTime <- Sys.time()
-      for (i in c(1:noCores)){
-        assign(
-          threadNames[i],
-          mcparallel(
-            lapply(
-              fileChunks[[i]],
-              function(filename) {
-                fWrapped(filename, sourceDir=sourceDir, targetDir=targetDir, verbose=FALSE, param=c(param, thread=threadNames[i]))
-              }
-            )),
-          envir=environment())
-        }
-      while (length(parallel:::selectChildren()) < noCores){
-        filesTargetDir <- list.files(path=dummyDir, pattern="\\.multicore")
-        .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
-        Sys.sleep(1)
-      }
-      retval <- parallel::mccollect(
-        jobs=lapply(threadNames, function(x) get(x, envir=environment())),
-        wait=TRUE
-        )
-      filesTargetDir <- list.files(path=dummyDir, pattern="\\.multicore")
-      .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
-      dummy <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
-      retval <- unlist(retval, recursive = FALSE)
-      # for (i in rev(which(sapply(retval, is.null) == TRUE))) retval[i] <- NULL
-      if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
-        class(retval) <- "timePerFile"
-      }
-      names(retval) <- filenames
+      retval <- pblapply(
+        c(1:length(filenames)),
+        function(i) f(
+          filenames[i], sourceDir = sourceDir, targetDir = targetDir,
+          verbose = verbose, param = c(fileNo=i, filesTotal = length(filenames), param)
+        ),
+        cl = noCores
+      )  
+      
+#       breaksRaw <- unlist(lapply(c(1:noCores), function(x) rep(x, times=trunc(length(filenames) / noCores))))
+#       breaks <- c(breaksRaw, rep(noCores, times=length(filenames)-length(breaksRaw)))
+#       fileChunks <- split(filenames, breaks)
+#       dummyDir <- tempdir()
+#       filesRemoved <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
+#       noFilesRemoved <- length(filesRemoved)
+#       if (noFilesRemoved > 0 && verbose == TRUE){
+#         message ("... logfiles were still present im tempdir, ", length(filesRemoved), " files removed")  
+#       }
+#       fWrapped <- function(filename, sourceDir, targetDir, verbose, param){
+#         cat("", file=file.path(dummyDir, paste(filename, "multicore", sep=".")))
+#         f(filename, sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=param)
+#       }
+#       if (length(parallel:::children()) > 0){
+#         warning("there have been zombie processes collected with mccollect()")
+#         graveyard <- mccollect()
+#       }
+#       threadNames <- paste("thread", c(1:noCores), sep="")
+#       startTime <- Sys.time()
+#       for (i in c(1:noCores)){
+#         assign(
+#           threadNames[i],
+#           mcparallel(
+#             lapply(
+#               fileChunks[[i]],
+#               function(filename) {
+#                 fWrapped(filename, sourceDir=sourceDir, targetDir=targetDir, verbose=FALSE, param=c(param, thread=threadNames[i]))
+#               }
+#             )),
+#           envir=environment())
+#         }
+#       while (length(parallel:::selectChildren()) < noCores){
+#         filesTargetDir <- list.files(path=dummyDir, pattern="\\.multicore")
+#         .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
+#         Sys.sleep(1)
+#       }
+#       retval <- parallel::mccollect(
+#         jobs=lapply(threadNames, function(x) get(x, envir=environment())),
+#         wait=TRUE
+#         )
+#       filesTargetDir <- list.files(path=dummyDir, pattern="\\.multicore")
+#       .progressBar(length(filesTargetDir), length(filenames), showShare=TRUE, startTime=startTime)
+#       dummy <- file.remove(list.files(dummyDir, full.names=T, pattern="\\.multicore", include.dirs=FALSE))
+#       retval <- unlist(retval, recursive = FALSE)
+#       # for (i in rev(which(sapply(retval, is.null) == TRUE))) retval[i] <- NULL
+#       if (unique(lapply(retval, function(x) class(x)[1])) == "difftime"){
+#         class(retval) <- "timePerFile"
+#       }
+#     names(retval) <- filenames
       return(retval)
     }
   }

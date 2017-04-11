@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Toolkit for Preparing Corpora
-Version: 0.2.17
-Date: 2017-02-17
+Version: 0.2.18
+Date: 2017-03-31
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: R Wrapper for sentence segmentation, tagging, and CWB import
@@ -10,15 +10,17 @@ Depends:
     methods
 Imports:
     XML,
-    parallel
+    parallel,
+    pbapply
 Suggests:
     polmineR
 LazyData: yes
 License: CC BY-NC-SA 4.0 | file LICENSE
-Collate:
+Collate: 
     'anyToXml_method.R'
     'as.package_function.R'
     'as.xml_method.R'
+    'bundleXMLFiles_method.R'
     'characterCount_method.R'
     'checkDirs_method.R'
     'consolidate_method.R'
@@ -57,4 +59,4 @@ Collate:
     'validate_method.R'
     'vrtCheck_method.R'
     'xslt_method.R'
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -1,5 +1,8 @@
-.Object <- taz
-sourceDir <- "vrt"
-library(XML)
+# .Object <- taz
+# sourceDir <- "vrt"
+# library(XML)
+# 
+# library(ctk)
+# welt <- new("ctkPipe", projectDir = "/home/blaette/Data/pipeDirs/welt")
 
-getAttributeValues(.Object, sourceDir = "vrt", pattern = "vrt", element = "text", attrs = "date", unique = FALSE, progress = TRUE)
+# xmlValues <- getAttributeValues(welt, sourceDir = "tok2", pattern = "tok", element = "text", attrs = "date", unique = FALSE, progress = TRUE)
