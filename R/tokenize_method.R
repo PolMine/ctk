@@ -166,7 +166,7 @@ setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
 }
 
 #' @rdname tokenize-method
-setMethod("tokenize", "ctkPipe", function(
+setMethod("tokenize", "pipe", function(
   .Object, sourceDir, targetDir, with="stanfordNLP", lang="de", ...
   ){
   checkDirs(.Object=.Object, sourceDir, targetDir)

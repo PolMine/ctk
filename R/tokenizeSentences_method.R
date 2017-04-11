@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
@@ -13,9 +13,9 @@ setMethod("tokenizeSentences", "character", function(
     system(cmd,intern=TRUE)
   }
   retval <- .iterateFunctionFiles(
-    sourceDir=.Object, f=.tokenizeSentences, pattern="xml",
+    sourceDir = .Object, f = .tokenizeSentences, pattern="xml",
     mc=mc, verbose=verbose, progress=progress, targetDir=targetDir,
-    pyFile=system.file("sentenceAnno.py", package="ctk")
+    pyFile = system.file("sentenceAnno.py", package="ctk")
     )
   retval
 })
@@ -25,8 +25,8 @@ setMethod("tokenizeSentences", "character", function(
 #' @return the output of the procedure
 #' @exportMethod tokenizeSentences
 #' @author Andreas Blaette
-#' @rdname ctkPipe
-setMethod("tokenizeSentences", "ctkPipe", function(
+#' @rdname pipe
+setMethod("tokenizeSentences", "pipe", function(
   .Object, sourceDir="xml",targetDir="xmlAnno",
   targetElement="p", para=FALSE,
   mc=FALSE, verbose=FALSE, progress=TRUE

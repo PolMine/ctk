@@ -6,8 +6,8 @@ setGeneric("checkDirs", function(.Object, ...) standardGeneric("checkDirs"))
 #' @param sourceDir directory1
 #' @param targetDir target directory
 #' @exportMethod checkDirs
-#' @rdname ctkPipe-class
-setMethod("checkDirs", "ctkPipe", function(.Object, sourceDir, targetDir){
+#' @rdname pipe-class
+setMethod("checkDirs", "pipe", function(.Object, sourceDir, targetDir){
   if (!sourceDir %in% list.dirs(.Object@projectDir, full.names=FALSE)) {
     warning("sourceDir not found")
   }

@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 .getSAttributes <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()){
@@ -44,8 +44,8 @@ setMethod("sAttributeList", "character", function(.Object, ...){
 
 #' @import XML
 #' @exportMethod sAttributeList
-#' @rdname ctkPipe
-setMethod("sAttributeList", "ctkPipe", function(.Object, sourceDir, ...){
+#' @rdname pipe
+setMethod("sAttributeList", "pipe", function(.Object, sourceDir, ...){
   sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), ...)
   .Object@sAttributes <- sAttributes
   return(.Object)

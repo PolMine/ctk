@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
@@ -74,8 +74,8 @@ setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
 #' @param lang the language to be used (defaults to 'de')
 #' @return the verbose output of the tagging script that is called
 #' @exportMethod treetagger
-#' @rdname ctkPipe
-setMethod("treetagger", "ctkPipe", function(
+#' @rdname pipe
+setMethod("treetagger", "pipe", function(
   .Object,
   sourceDir="xml",  targetDir="vrt", py=FALSE, lang="de",
   ...

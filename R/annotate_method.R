@@ -23,7 +23,7 @@ setMethod("annotate", "character", function(.Object, targetDir, output = c("text
 })
 
 
-setMethod("annotate", "ctkPipe", function(.Object, sourceDir, targetDir, mc = 1){
+setMethod("annotate", "pipe", function(.Object, sourceDir, targetDir, mc = 1){
   annotate(
     .Object = file.path(.Object@projectDir, sourceDir),
     targetDir = file.path(.Object@projectDir, targetDir),

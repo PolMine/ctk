@@ -33,7 +33,7 @@ setGeneric("CoNLL2vrt", function(.Object, ...) standardGeneric("CoNLL2vrt"))
 
 
 
-setMethod("CoNLL2vrt", "ctkPipe", function(.Object, sourceDir, targetDir, pattern = "conll", progress = TRUE, mc = FALSE, verbose = FALSE){
+setMethod("CoNLL2vrt", "pipe", function(.Object, sourceDir, targetDir, pattern = "conll", progress = TRUE, mc = FALSE, verbose = FALSE){
   dirApply(
     f = .CoNLL2vrt,
     sourceDir = file.path(.Object@projectDir, sourceDir),

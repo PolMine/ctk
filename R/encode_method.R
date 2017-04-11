@@ -1,23 +1,26 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
 #' @rdname encode-method
 setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 
-#' import into CWB
+#' Encode corpus (CWB import).
 #' 
-#' This is a wrapper for the cwb-encode and cwb-make command line tools.
+#' This is a wrapper for the \code{cwb-encode} and \code{cwb-make} command line tools. 
+#' The calls are generated and executed (via a system call).
 #' 
 #' @param .Object a character vector
 #' @param corpus the corpus name
 #' @param registry the directory of the CWB registry
 #' @param sAttributes a list, use sAttributes-method
 #' @param xml whether files are XML
+#' @param exec logical, whether to execute commands
+#' @param embedding levels of embedding elements to allow for 
 #' @param verbose defaults to TRUE
 #' @rdname encode-method
 #' @exportMethod encode
-setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttributes, xml=TRUE, verbose=TRUE){
+setMethod("encode", "character", function(.Object, corpus = "FOO", registry = Sys.getenv("CORPUS_REGISTRY"), sAttributes, embedding = "0", xml = TRUE, exec = TRUE, verbose = TRUE){
   tmp <- unlist(strsplit(registry, "/"))
   cwbDirs <- list.dirs(paste("/", paste(tmp[2:(length(tmp)-1)], collapse="/"), sep=""), recursive=FALSE)
   indexedCorpusDir <- cwbDirs[grep("indexed", cwbDirs)]
@@ -30,12 +33,12 @@ setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttr
   }
   sAttrCmd <- vapply(
     names(sAttributes),
-    FUN.VALUE="character", USE.NAMES=FALSE,
+    FUN.VALUE = "character", USE.NAMES = FALSE,
     function(sAttr) {
-      ret <- paste("-S ", sAttr, sep="")
+      ret <- paste("-S ", sAttr, sep = "")
       if (!is.na(sAttributes[[sAttr]][1])){
-        attributes <- paste(sAttributes[[sAttr]], collapse="+")      
-        ret <- paste(ret, ":0+", attributes, sep="")
+        attributes <- paste(sAttributes[[sAttr]], collapse = "+")      
+        ret <- paste(ret, ":", embedding, "+", attributes, sep = "")
       }
       ret
     }
@@ -51,14 +54,17 @@ setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttr
   )
   if (xml == TRUE) cmd <- c(cmd, "-xsB")
   cmd <- paste(cmd, collapse=" ")
-  if (verbose == TRUE) message("... encoding the CWB corpus")
-  if (verbose == TRUE) print(cmd)
-  ret <- system(cmd)
+  if (verbose) message("... encoding the CWB corpus")
+  if (verbose) print(cmd)
+  if (exec){
+    ret <- system(cmd)
+  }
+  
   if (ret == 0) {
     if (verbose == TRUE) message("... cwb-make")
     cwbMakeCmd <- paste("cwb-make -V", toupper(corpus), "-r", registry)
     print(cwbMakeCmd)
-    system(cwbMakeCmd)
+    if (exec) system(cwbMakeCmd)
   } else {
     stop("some problem with cwb-encode")
   }
@@ -71,12 +77,16 @@ setMethod("encode", "character", function(.Object, corpus="FOO", registry, sAttr
 #' @param xml logical
 #' @exportMethod encode
 #' @rdname encode-method
-setMethod("encode", "ctkPipe", function(.Object, sourceDir, corpus, xml = TRUE, verbose=TRUE, ...){
+setMethod("encode", "pipe", function(.Object, sourceDir, corpus, xml = TRUE, verbose = TRUE, ...){
   if (length(.Object@sAttributes) == 0) {
     if (verbose == TRUE) message("... getting sAttributes")
     .Object <- sAttributeList(.Object, sourceDir=sourceDir, ...) 
   }
-  encode(.Object=file.path(.Object@projectDir, sourceDir), corpus=corpus, registry=.Object@registry, sAttributes=.Object@sAttributes, xml=xml)
+  encode(
+    .Object = file.path(.Object@projectDir, sourceDir),
+    corpus = corpus, registry = .Object@registry,
+    sAttributes = .Object@sAttributes, xml = xml
+    )
   return(.Object)
 })
 

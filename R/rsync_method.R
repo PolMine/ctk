@@ -1,12 +1,12 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
 setGeneric("rsync", function(object, ...) standardGeneric("rsync"))
 
 #' @exportMethod rsync
-#' @rdname ctkPipe
-setMethod("rsync", "ctkPipe", function(object){
+#' @rdname pipe
+setMethod("rsync", "pipe", function(object){
   cmd <- c(
     "rsync", "-avzbe", "ssh",
     object@projectDir,

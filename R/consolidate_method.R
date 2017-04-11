@@ -1,4 +1,4 @@
-# @include ctkPipe_class.R
+# @include pipe_class.R
 NULL
 
 #' @exportMethod consolidate
@@ -26,7 +26,7 @@ setGeneric("consolidate", function(.Object, ...) standardGeneric("consolidate"))
 }
 
 
-setMethod("consolidate", "ctkPipe", function(
+setMethod("consolidate", "pipe", function(
   .Object, sourceDir, targetDir,
   element, attribute, consolidation,
   ...

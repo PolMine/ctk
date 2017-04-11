@@ -72,8 +72,8 @@
 #' @exportMethod fix
 #' @aliases fix-method fix
 #' @rdname fix-method
-#' @rdname ctkPipe
-setMethod("fix", "ctkPipe", function(x, sourceDir, targetDir, encoding="UTF-8", ...){
+#' @rdname pipe
+setMethod("fix", "pipe", function(x, sourceDir, targetDir, encoding="UTF-8", ...){
   checkDirs(x, sourceDir, targetDir)
   dirApply(
     f=.repairVrtFile,

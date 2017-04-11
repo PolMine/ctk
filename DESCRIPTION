@@ -25,6 +25,7 @@ Collate:
     'checkDirs_method.R'
     'consolidate_method.R'
     'ctkPipe_class.R'
+    'pipe_class.R'
     'ctkPipe_class_methods.R'
     'ctk_package.R'
     'describeDir_method.R'

@@ -12,7 +12,7 @@ setGeneric("mergeFiles", function(.Object, ...) standardGeneric("mergeFiles"))
 #' @param mc logical, whether to use parallel processing
 #' @param verbose logical, whether to be verbose
 #' @param ... further parameters
-setMethod("mergeFiles", "ctkPipe", function(
+setMethod("mergeFiles", "pipe", function(
   .Object, sourceDir, targetDir, regex, rootElement, rootAttrs,
   mc=FALSE, verbose=TRUE, ...
   ){

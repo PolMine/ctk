@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 #' perform XSL transformation
@@ -12,7 +12,7 @@ NULL
 #' @exportMethod xslt
 setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
 
-.xsltWorker <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
+.xsltWorker <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
   if (is.null(targetDir)){
     targetDir <- tempdir()
     returnString <- TRUE
@@ -44,7 +44,7 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
   )
   cmd <- paste(cmd, collapse=" ")
   if (verbose == TRUE) message("... processing ", filename)
-  system(cmd,intern=TRUE, ignore.stdout=verbose, ignore.stderr=ifelse(verbose==TRUE, FALSE, TRUE))
+  system(cmd,intern=TRUE, ignore.stdout=verbose, ignore.stderr = ifelse(verbose==TRUE, FALSE, TRUE))
   if (returnString == TRUE){
     retval <- saveXML(xmlParse(file=file.path(targetDir, filename)), indent=FALSE)
     file.remove(file.path(targetDir, filename))
@@ -60,20 +60,19 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
 #' @param mkdir logical, whether to create the outDir, if it does not yet exist
 #' @return return of the saxon parser
 #' @exportMethod xslt
-#' @rdname ctkPipe
-setMethod("xslt", "ctkPipe", function(
+#' @rdname pipe
+setMethod("xslt", "pipe", function(
   .Object, sourceDir, targetDir, xslFile, ...
 ){
-  # assign("xslFile", xslFile, envir=.GlobalEnv)
   dirApply(
-    f=.xsltWorker,
-    sourceDir=file.path(.Object@projectDir, sourceDir),
-    targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(xslFile=xslFile), 
+    f = .xsltWorker,
+    sourceDir = file.path(.Object@projectDir, sourceDir),
+    targetDir = file.path(.Object@projectDir, targetDir),
+    param = list(xslFile=xslFile), 
     ...
   )       
 })
 
 setMethod("xslt", "character", function(.Object, xslFile){
-  .xsltWorker(filename=.Object, param=list(xslFile=xslFile))
+  .xsltWorker(filename = .Object, param = list(xslFile = xslFile))
 })

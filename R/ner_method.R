@@ -46,7 +46,7 @@ setGeneric("ner", function(.Object, ...) standardGeneric("ner"))
 #' bt <- plprbtpdf("/home/blaette/plprbtpdf")
 #' tokenize(bt, sourceDir="xmlCwb", targetDir="tmp")
 #' }
-setMethod("ner", "ctkPipe", function(
+setMethod("ner", "pipe", function(
   .Object, sourceDir, targetDir,
   pattern="xml", mc=FALSE, progress=TRUE, verbose=FALSE, sample=FALSE, files=NULL, continue=FALSE, failsafe=FALSE, ...
   ){

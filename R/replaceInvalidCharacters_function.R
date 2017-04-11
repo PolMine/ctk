@@ -48,7 +48,7 @@ setGeneric("replaceInvalidCharacters", function(.Object, ...) standardGeneric("r
 #' @export replaceInvalidCharacters
 #' @rdname replaceInvalidCharacters
 #' @name replaceInvalidCharacters
-setMethod("replaceInvalidCharacters", "ctkPipe", function(.Object, sourceDir, targetDir, xml=FALSE, ...){
+setMethod("replaceInvalidCharacters", "pipe", function(.Object, sourceDir, targetDir, xml=FALSE, ...){
   if (xml == FALSE) {
     stopifnot(!is.null(sourceDir))
     dirApply(
