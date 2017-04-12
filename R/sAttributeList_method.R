@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 .getSAttributes <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()){
@@ -25,10 +25,9 @@ setGeneric("sAttributeList", function(.Object, ...) standardGeneric("sAttributeL
 #' @param mc whether to use multicore
 #' @rdname sAttributeList-method
 #' @exportMethod sAttributeList
-setMethod("sAttributeList", "character", function(.Object, ...){
+setMethod("sAttributeList", "character", function(.Object, sample = 100, progress = TRUE, verbose = FALSE, ...){
   docs <- dirApply(
-    f=.getSAttributes, sourceDir=.Object, targetDir=NULL, verbose=FALSE, param=list(),
-    ...
+    f = .getSAttributes, sourceDir=.Object, targetDir = NULL, verbose = FALSE, param=list(), sample = sample, progress = progress
     )
   uniqueElements <- unique(unlist(lapply(docs, names)))
   # sAttrAllDocs <- lapply(setNames(uniqueElements, uniqueElements), function(x) NA)
@@ -44,9 +43,9 @@ setMethod("sAttributeList", "character", function(.Object, ...){
 
 #' @import XML
 #' @exportMethod sAttributeList
-#' @rdname ctkPipe
-setMethod("sAttributeList", "ctkPipe", function(.Object, sourceDir, ...){
-  sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), ...)
+#' @rdname pipe
+setMethod("sAttributeList", "pipe", function(.Object, sourceDir, sample = 100, progress = TRUE, verbose = FALSE, ...){
+  sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), sample = sample, progress = progress, verbose = verbose)
   .Object@sAttributes <- sAttributes
   return(.Object)
 })

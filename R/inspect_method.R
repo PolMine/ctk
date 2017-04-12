@@ -22,6 +22,6 @@ setMethod("inspect", "character", function(.Object, element, attributes, mc=FALS
   results
 })
 
-setMethod("inspect", "ctkPipe", function(.Object, sourceDir, element, attributes, mc=FALSE, verbose=FALSE){
+setMethod("inspect", "pipe", function(.Object, sourceDir, element, attributes, mc=FALSE, verbose=FALSE){
   inspect(file.path(.Object@projectDir, sourceDir), element=element, attributes=attributes, mc=mc, verbose=verbose)
 })

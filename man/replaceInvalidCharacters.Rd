@@ -5,7 +5,7 @@
 \alias{replaceInvalidCharacters}
 \title{replace invalid characters}
 \usage{
-\S4method{replaceInvalidCharacters}{ctkPipe}(.Object, sourceDir, targetDir,
+\S4method{replaceInvalidCharacters}{pipe}(.Object, sourceDir, targetDir,
   xml = FALSE, ...)
 }
 \arguments{

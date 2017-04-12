@@ -4,7 +4,7 @@
 \name{recode}
 \alias{recode}
 \alias{recode,character-method}
-\alias{recode,ctkPipe-method}
+\alias{recode,pipe-method}
 \title{apply iconv to files in a directory}
 \usage{
 recode(.Object, ...)
@@ -12,7 +12,7 @@ recode(.Object, ...)
 \S4method{recode}{character}(.Object, targetDir = NULL, from = NULL, to,
   xml = FALSE, ...)
 
-\S4method{recode}{ctkPipe}(.Object, sourceDir, targetDir, from = "UTF-8",
+\S4method{recode}{pipe}(.Object, sourceDir, targetDir, from = "UTF-8",
   to = "ISO-8859-1", xml = FALSE, log = FALSE, ...)
 }
 \arguments{

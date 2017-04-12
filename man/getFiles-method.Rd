@@ -5,12 +5,12 @@
 \alias{getFiles}
 \title{get files from several directories}
 \usage{
-\S4method{getFiles}{ctkPipe}(.Object, sourceDir, targetDir, recursive = TRUE,
+\S4method{getFiles}{pipe}(.Object, sourceDir, targetDir, recursive = TRUE,
   exclude = NULL, rectify = TRUE, method = "find", pattern = "html",
   verbose = T, progress = F, failsafe = FALSE)
 }
 \arguments{
-\item{.Object}{a ctkPipe class object}
+\item{.Object}{a pipe class object}
 
 \item{sourceDir}{source directories}
 

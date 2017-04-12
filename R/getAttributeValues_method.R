@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
@@ -63,7 +63,7 @@ setMethod("getAttributeValues", "character", function(
   retval
 })
 
-setMethod("getAttributeValues", "ctkPipe", function(.Object, sourceDir, pattern, element, attrs, unique = TRUE, mc = FALSE, progress = TRUE){
+setMethod("getAttributeValues", "pipe", function(.Object, sourceDir, pattern, element, attrs, unique = TRUE, mc = FALSE, progress = TRUE){
   getAttributeValues(
     .Object = file.path(.Object@projectDir, sourceDir), pattern = pattern,
     element = element, attrs = attrs, unique = unique, mc = mc, progress = progress

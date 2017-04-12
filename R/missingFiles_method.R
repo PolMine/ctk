@@ -10,7 +10,7 @@
 setGeneric("missingFiles", function(.Object, ...) standardGeneric("missingFiles"))
 
 #' @rdname missingFiles
-setMethod("missingFiles", "ctkPipe", function(.Object, sourceDir, targetDir){
+setMethod("missingFiles", "pipe", function(.Object, sourceDir, targetDir){
   filesTargetDir <- list.files(file.path(.Object@projectDir, targetDir))
   filesSourceDir <- list.files(file.path(.Object@projectDir, sourceDir))
   filesTargetDirChomp <- gsub("^(.*)\\..*$", "\\1", filesTargetDir)

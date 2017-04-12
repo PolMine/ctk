@@ -1,4 +1,4 @@
-# @include ctkPipe_class.R
+# @include pipe_class.R
 NULL
 
 setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
@@ -25,8 +25,8 @@ setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
 #' @param checkValidity whether to validate XML in targetDir
 #' @param progress whether to use progress bar
 #' @exportMethod findReplace
-#' @rdname ctkPipe
-setMethod("findReplace", "ctkPipe", function(
+#' @rdname pipe
+setMethod("findReplace", "pipe", function(
   object, sourceDir, targetDir,
   replacements, encoding="UTF-8",
   ...
@@ -43,7 +43,7 @@ setMethod("findReplace", "ctkPipe", function(
 })
 
 
-# setMethod("findReplace", "ctkPipe", function(object, sourceDir, targetDir, replacements=regexPostprocessing, checkValidity=TRUE, progress=TRUE, parallel=FALSE){
+# setMethod("findReplace", "pipe", function(object, sourceDir, targetDir, replacements=regexPostprocessing, checkValidity=TRUE, progress=TRUE, parallel=FALSE){
 #   startTime <- Sys.time()
 #   checkDirs(object, sourceDir, targetDir)
 #   files <- list.files(file.path(object@projectDir, sourceDir))

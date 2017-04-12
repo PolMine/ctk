@@ -4,16 +4,17 @@
 \name{encode}
 \alias{encode}
 \alias{encode,character-method}
-\alias{encode,ctkPipe-method}
+\alias{encode,pipe-method}
 \alias{encode,Regions-method}
-\title{import into CWB}
+\title{Encode corpus (CWB import).}
 \usage{
 encode(.Object, ...)
 
-\S4method{encode}{character}(.Object, corpus = "FOO", registry, sAttributes,
-  encoding, xml = TRUE, verbose = TRUE)
+\S4method{encode}{character}(.Object, corpus = "FOO",
+  registry = Sys.getenv("CORPUS_REGISTRY"), sAttributes, embedding = "0",
+  xml = TRUE, exec = TRUE, verbose = TRUE)
 
-\S4method{encode}{ctkPipe}(.Object, sourceDir, corpus, encoding, xml = TRUE,
+\S4method{encode}{pipe}(.Object, sourceDir, corpus, encoding, xml = TRUE,
   verbose = TRUE, ...)
 
 \S4method{encode}{Regions}(.Object, filename = NULL, verbose = TRUE)
@@ -27,7 +28,11 @@ encode(.Object, ...)
 
 \item{sAttributes}{a list, use sAttributes-method}
 
+\item{embedding}{levels of embedding elements to allow for}
+
 \item{xml}{whether files are XML}
+
+\item{exec}{logical, whether to execute commands}
 
 \item{verbose}{defaults to TRUE}
 
@@ -36,5 +41,6 @@ encode(.Object, ...)
 \item{xml}{logical}
 }
 \description{
-This is a wrapper for the cwb-encode and cwb-make command line tools.
+This is a wrapper for the \code{cwb-encode} and \code{cwb-make} command line tools. 
+The calls are generated and executed (via a system call).
 }

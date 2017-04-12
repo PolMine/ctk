@@ -1,4 +1,7 @@
-# @include ctkPipe_class.R
+#' @include pipe_class.R
+NULL
+
+# @include pipe_class.R
 NULL
 
 #' @exportMethod consolidate
@@ -26,11 +29,11 @@ setGeneric("consolidate", function(.Object, ...) standardGeneric("consolidate"))
 }
 
 
-setMethod("consolidate", "ctkPipe", function(
+setMethod("consolidate", "pipe", function(
   .Object, sourceDir, targetDir,
   element, attribute, consolidation,
   ...
-  ){
+){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.consolidate,
@@ -38,5 +41,5 @@ setMethod("consolidate", "ctkPipe", function(
     targetDir=file.path(.Object@projectDir, targetDir),
     param=list(consolidation=consolidation, element=element, attribute=attribute),
     ...
-    )
+  )
 })

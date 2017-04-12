@@ -3,12 +3,12 @@
 \docType{methods}
 \name{missingFiles}
 \alias{missingFiles}
-\alias{missingFiles,ctkPipe-method}
+\alias{missingFiles,pipe-method}
 \title{get files in targetDir that are missing in sourceDir}
 \usage{
 missingFiles(.Object, ...)
 
-\S4method{missingFiles}{ctkPipe}(.Object, sourceDir, targetDir)
+\S4method{missingFiles}{pipe}(.Object, sourceDir, targetDir)
 }
 \arguments{
 \item{.Object}{ctkObject}

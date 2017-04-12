@@ -1,4 +1,4 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 .validateWorker <- function(filename, sourceDir, verbose, dtd=NULL, targetDir=NULL){
@@ -19,7 +19,7 @@ NULL
 #' 
 #' a story to be told
 #' 
-#' @param .Object either a character vector indicating a directore, or a ctkPipe object
+#' @param .Object either a character vector indicating a directore, or a pipe object
 #' @param sourceDir the source directory
 #' @param dtd check agains a dtd
 #' @param ... further arguments
@@ -38,12 +38,12 @@ setMethod("validate", "character", function(.Object, dtd=NULL, targetDir=NULL, v
   .iterateFunctionFiles(
     sourceDir=.Object, f=.validateWorker, pattern="xml", mc=mc,
     verbose=verbose, progress=progress, targetDir=targetDir, dtd=dtd
-    )
+  )
 })
 
 
 #' @rdname validate
-setMethod("validate", "ctkPipe", function(
+setMethod("validate", "pipe", function(
   .Object, sourceDir, targetDir=NULL,
   dtd=NULL, verbose=FALSE, mc=FALSE, progress=TRUE, files=NULL, pattern="xml"){
   if (!is.null(targetDir)) targetDir <- file.path(.Object@projectDir, targetDir)
@@ -53,7 +53,7 @@ setMethod("validate", "ctkPipe", function(
     y=targetDir,
     dtd=dtd,
     verbose=verbose, mc=mc, progress=progress, files=files, pattern=pattern
-    )
+  )
 })
 
 

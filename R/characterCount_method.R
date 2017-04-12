@@ -9,7 +9,6 @@ setGeneric("characterCount", function(.Object, ...) standardGeneric("characterCo
 #' @param mc defaults to FALSE
 #' @param verbose whether to be verbose
 #' @import XML
-#' @importMethodsFrom polmineR characterCount
 #' @export characterCount
 setMethod("characterCount", "character", function(.Object, regexCharsToKeep="[a-zA-Z]", xml=TRUE, toLower=FALSE, decreasing=TRUE, progress=TRUE, mc=FALSE, verbose=TRUE){
   if (verbose == TRUE) message("... counting characters")

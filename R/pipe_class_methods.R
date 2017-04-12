@@ -1,20 +1,20 @@
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 #' @import methods
 NULL
 
 
 
 #' @exportMethod show
-#' @rdname ctkPipe
-setMethod("show", "ctkPipe", function(object){
+#' @rdname pipe
+setMethod("show", "pipe", function(object){
   cat(object@projectDir)
   cat("\n\n")
   print(object@tasks)
 })
 
 #' @exportMethod summary
-#' @rdname ctkPipe
-setMethod("summary", "ctkPipe", function(object){
+#' @rdname pipe
+setMethod("summary", "pipe", function(object){
   subdirs <- list.dirs(object@projectDir, full.names=FALSE)
   subdirs <- subdirs[which(subdirs != c(""))]
   noFiles <- sapply(

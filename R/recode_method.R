@@ -13,7 +13,7 @@
 setGeneric("recode", function(.Object, ... ) standardGeneric("recode"))
 
 
-#' @include ctkPipe_class.R
+#' @include pipe_class.R
 NULL
 
 
@@ -106,7 +106,7 @@ setMethod("recode", "character", function(.Object, targetDir=NULL, from=NULL, to
 })
 
 #' @rdname recode-method
-setMethod("recode", "ctkPipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
+setMethod("recode", "pipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
   checkDirs(.Object, sourceDir, targetDir)
   dirApply(
     f=.iconvWorker,

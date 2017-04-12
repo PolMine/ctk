@@ -1,5 +1,5 @@
 #' @exportMethod subset
-setMethod("subset", "ctkPipe", function(x, sourceDir, targetDir, sample=NULL, files=NULL){
+setMethod("subset", "pipe", function(x, sourceDir, targetDir, sample=NULL, files=NULL){
   if (is.null(files)){
     files <- list.files(file.path(x@projectDir, sourceDir))
   }

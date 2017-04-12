@@ -3,12 +3,12 @@
 \docType{methods}
 \name{ner}
 \alias{ner}
-\alias{ner,ctkPipe-method}
+\alias{ner,pipe-method}
 \title{apply named entity recognition to files in a dir (using StanfordNLP)}
 \usage{
 ner(.Object, ...)
 
-\S4method{ner}{ctkPipe}(.Object, sourceDir, targetDir, pattern = "xml",
+\S4method{ner}{pipe}(.Object, sourceDir, targetDir, pattern = "xml",
   mc = FALSE, progress = TRUE, verbose = FALSE, sample = FALSE,
   files = NULL, continue = FALSE, failsafe = FALSE, ...)
 }

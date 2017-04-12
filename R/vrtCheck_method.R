@@ -12,7 +12,7 @@ setGeneric("checkVrt", function(.Object, ...)  standardGeneric("checkVrt"))
   )
 }
 
-setMethod("checkVrt", "ctkPipe", function(
+setMethod("checkVrt", "pipe", function(
   .Object, sourceDir,
   mc=TRUE, progress=FALSE, sample=FALSE, files=NULL, verbose=TRUE, ...){
   dirApply(

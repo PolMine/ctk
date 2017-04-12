@@ -3,13 +3,13 @@
 \docType{methods}
 \name{tokenize}
 \alias{tokenize}
-\alias{tokenize,ctkPipe-method}
-\title{tokenize files in a dir (using StanfordNLP)}
+\alias{tokenize,pipe-method}
+\title{Tokenize files.}
 \usage{
 tokenize(.Object, ...)
 
-\S4method{tokenize}{ctkPipe}(.Object, sourceDir, targetDir,
-  with = "stanfordNLP", lang = "de", ...)
+\S4method{tokenize}{pipe}(.Object, sourceDir, targetDir, with = "stanfordNLP",
+  lang = "de", ...)
 }
 \arguments{
 \item{.Object}{a ctk object}
@@ -41,5 +41,11 @@ tokenize(.Object, ...)
 \item{failsafe}{proceed in a failsafe manner}
 }
 \description{
-tokenize files in a dir (using StanfordNLP)
+Tokenize (XML) files with one standard tool (treetagger, stanfordNLP, openNLP).
+}
+\details{
+One potential problem with the perl-tokenizer that comes with the treetagger
+is that the output is not valid XML. It is necessary to fix the XML with a 
+shell command such as \code{for i in $(ls); do sed 's/\xC2\xA0/ /g' $i > ../tok2/$i; done}.
+The XML may still not be valid ("&" etc.), so fix method is still necessary.
 }

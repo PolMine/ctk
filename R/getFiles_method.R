@@ -3,7 +3,7 @@ setGeneric("getFiles", function(.Object, ...) standardGeneric("getFiles"))
 
 #' get files from several directories
 #'  
-#' @param .Object a ctkPipe class object
+#' @param .Object a pipe class object
 #' @param sourceDir source directories
 #' @param targetDir targetDir in the projectDir
 #' @param recursive whether to check subdirectories
@@ -18,7 +18,7 @@ setGeneric("getFiles", function(.Object, ...) standardGeneric("getFiles"))
 #' @name getFiles
 #' @import pbapply
 setMethod(
-  "getFiles", "ctkPipe",
+  "getFiles", "pipe",
   function(
     .Object, sourceDir, targetDir,
     recursive=TRUE, exclude=NULL, rectify=TRUE, method="find",
