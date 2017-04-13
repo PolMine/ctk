@@ -54,3 +54,4 @@ temporary directory. These logfiles are removed before and after the actual
 parallel processing. In case of zombie child processes from an earlier interrupted
 run, the counting may be utterly flawed.
 }
+

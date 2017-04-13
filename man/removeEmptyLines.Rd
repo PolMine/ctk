@@ -12,3 +12,4 @@ removeEmptyLines(x)
 \description{
 remove empty lines
 }
+

@@ -34,3 +34,4 @@ as.xml(.Object, ...)
 \description{
 convert data.frame to XML
 }
+

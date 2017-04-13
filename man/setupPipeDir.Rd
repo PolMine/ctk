@@ -16,3 +16,4 @@ setupPipeDir(.Object, ...)
 \description{
 Create pipeDir and all relevant subdirectories.
 }
+

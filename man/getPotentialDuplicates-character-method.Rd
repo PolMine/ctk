@@ -18,3 +18,4 @@ xmlDir <- "/Users/blaette/Lab/repos/keywords/data/figaro/xml"
 docsToCompareMatrix <- getPotentialDuplicates(xmlDir, reduce=TRUE, progress=TRUE, verbose=TRUE, mc=TRUE)
 }
 }
+

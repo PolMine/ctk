@@ -2,8 +2,8 @@
 % Please edit documentation in R/pipe_class.R, R/checkDirs_method.R
 \docType{class}
 \name{pipe-class}
-\alias{pipe-class}
 \alias{checkDirs,pipe-method}
+\alias{pipe-class}
 \title{pipe class}
 \usage{
 \S4method{checkDirs}{pipe}(.Object, sourceDir, targetDir)

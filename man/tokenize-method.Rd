@@ -49,3 +49,4 @@ is that the output is not valid XML. It is necessary to fix the XML with a
 shell command such as \code{for i in $(ls); do sed 's/\xC2\xA0/ /g' $i > ../tok2/$i; done}.
 The XML may still not be valid ("&" etc.), so fix method is still necessary.
 }
+

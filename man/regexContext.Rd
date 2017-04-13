@@ -24,3 +24,4 @@ regexContext(.Object, ...)
 \description{
 Get a data frame with the left and right context of the match of a regex.
 }
+

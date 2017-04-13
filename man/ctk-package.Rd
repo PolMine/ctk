@@ -4,10 +4,9 @@
 \name{ctk}
 \alias{ctk}
 \alias{ctk-package}
-\alias{ctk-package}
 \title{ctk-package}
 \description{
-Tools for importing XML into the CWB
+Tools for importing XML into the CWB.
 }
 \details{
 The ctk-package relies on some external tools, such as the TreeTagger. The package gets
@@ -20,6 +19,22 @@ PATH_TREETAGGER='/opt/treetagger'
 The saxon XSLT parser ist available here: http://sourceforge.net/projects/saxon/files/
 For the TreeTagger, see: http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/
 }
+\examples{
+\dontrun{
+taz <- new("pipe", projectDir = "/home/blaette/Data/pipeDirs/taz")
+taz <- setPaths(taz)
+filesCopied <- getFiles(
+  taz, sourceDir = "/home/blaette/Lab/rsync/taz/html_out", targetDir = "xml",
+  pattern = "xml", method = "list.files", recursive = TRUE, rectify = FALSE,
+ verbose = FALSE, progress = TRUE
+ )
+tokenize(taz, sourceDir = "xml", targetDir = "tok", progress = TRUE, mc = 3)
+treetagger(taz, sourceDir = "tok", "vrt", progress = TRUE, mc = 3)
+fix(taz, sourceDir = "vrt", targetDir = "vrt2", mc = 8)
+encode(taz, corpus = "taz2", sourceDir = "vrt5", sample = 500, embedding = "10", encoding = "utf8")
+}
+}
 \author{
 Andreas Blaette
 }
+

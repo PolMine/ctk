@@ -34,3 +34,4 @@ a story to be told
   for i in $(ls); do xmllint --recover $i -o ../xmlValidated/$i; done
 }
 }
+

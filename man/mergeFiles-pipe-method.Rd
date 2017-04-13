@@ -26,3 +26,4 @@
 \description{
 Merge files matching a regex to a new XML file.
 }
+

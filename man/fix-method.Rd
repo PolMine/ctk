@@ -2,22 +2,41 @@
 % Please edit documentation in R/fix_method.R
 \docType{methods}
 \name{fix,pipe-method}
+\alias{fix}
 \alias{fix,pipe-method}
 \alias{fix-method}
-\alias{fix}
-\title{correct/polish vrt files}
+\title{Fix vrt files for CWB import.}
 \usage{
-\S4method{fix}{pipe}(x, sourceDir, targetDir, encoding = "UTF-8", ...)
+\S4method{fix}{pipe}(x, sourceDir, targetDir, encoding = "UTF-8",
+  replacements = list(), ...)
 }
 \arguments{
 \item{x}{a character vector providing a directory with vrt files}
 
+\item{sourceDir}{character vector with directory with files}
+
 \item{targetDir}{a character vector}
+
+\item{encoding}{encoding of the file, used by scan}
+
+\item{replacements}{a list of character vectors (length 2 each) with regular expressions / replacements}
 
 \item{mc}{whether to use multicore}
 
-\item{verbose}{logicel, defaults to TRUE}
+\item{verbose}{logical, defaults to TRUE}
 }
 \description{
-The treetagger wrapper script results in some faulty lines - this is corrected here.
+Files resulting from tagging/annotation may violate the requirements of the 
+Corpus Workbench (CWB). The \code{fix} method repairs the known issues
+the vrt files may cause.
 }
+\details{
+Known issues resulting from annotating files (with the treetagger in particular)
+are whitespace characters invalid for XML, XML elements at the end of a line
+rather than in a seperate line, characters invalid for XML (such as ampersands),
+inter alia.
+
+Before doing respective corrections, the method tests whether there is any text at
+all in the files. Empty files (files that contain nothing but XML tags) are dropped.
+}
+

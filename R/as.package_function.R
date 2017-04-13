@@ -57,35 +57,6 @@ as.package <- function(
   )
   cat(description_char, file = file.path(targetDir, "DESCRIPTION"), sep = "\n")
   
-  if (verbose) message("... creating configure file")
-  registry_parsed <- polmineR::parseRegistry(corpus)
-  registry <- polmineR::readRegistry(corpus)
-  registry_head <- paste(
-    registry[1:grep("# path to binary data files", registry)],
-    collapse = "LINEBREAK"
-    )
-  registry_tail <- paste(
-    registry[grep("# corpus properties", registry):length(registry)],
-    collapse = "LINEBREAK"
-    )
-  configure_file <- scan(
-    file = system.file("sh", "configure", package = "ctk"),
-    what = "character", sep = "\n", blank.lines.skip = FALSE, quiet = TRUE
-    )
-  configure_file <- gsub("CORPUS", tolower(corpus), configure_file)
-  configure_file <- gsub("REGISTRY_HEAD", registry_head, configure_file)
-  configure_file <- gsub("REGISTRY_TAIL", registry_tail, configure_file)
-  configure_file <- paste(configure_file, collapse = "\n")
-  cat(configure_file, file = file.path(targetDir, "configure.raw"))
-  sed_shell_cmd <- paste(
-    "sh", system.file("sh", "sed.sh", package="ctk"),
-    file.path(targetDir, "configure.raw"),
-    ">", file.path(targetDir, "configure")
-    )
-  system(sed_shell_cmd)
-  file.remove(file.path(targetDir, "configure.raw"))
-  system(paste("chmod", "0755", file.path(targetDir, "configure")))
-
   if (verbose == TRUE) message("... copy binary corpus files")
   filesToCopy <- list.files(registryParsed$HOME, full.names=TRUE)
   dummy <- lapply(

@@ -5,7 +5,8 @@
 \alias{sAttributeList,character-method}
 \title{get a list with sAttributes from files}
 \usage{
-\S4method{sAttributeList}{character}(.Object, ...)
+\S4method{sAttributeList}{character}(.Object, sample = 100, progress = TRUE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{object}{a directory}
@@ -15,3 +16,4 @@
 \description{
 get a list with sAttributes from files
 }
+

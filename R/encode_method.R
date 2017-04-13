@@ -97,6 +97,7 @@ setMethod("encode", "pipe", function(.Object, sourceDir, corpus, encoding, xml =
 
 
 #' @rdname encode-method
+#' @importFrom data.table data.table setorder setnames
 setMethod("encode", "Regions", function(.Object, filename = NULL, verbose = TRUE){
   cposDT <- .Object@cpos[!is.na(cpos_right)]
   cposDT[, "index" := c(1:nrow(cposDT)), with = FALSE]

@@ -15,7 +15,7 @@ setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
 #' @param verbose logical, defaults to TRUE
 #' @rdname treetagger-method
 #' @exportMethod treetagger
-
+#' @importFrom utils capture.output
 .treetaggerWorker <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
   if (is.null(targetDir)){
     targetDir <- tempdir()

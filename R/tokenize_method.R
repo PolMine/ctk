@@ -24,6 +24,8 @@
 #' @rdname tokenize-method
 #' @name tokenize
 #' @exportMethod tokenize
+#' @importFrom NLP annotate
+#' @importFrom openNLP Maxent_Word_Token_Annotator Maxent_Sent_Token_Annotator
 setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
 
 .openNLPtokenizer <- function(filename, sourceDir, targetDir, startTime=Sys.time(), returnString=FALSE, lang="en"){

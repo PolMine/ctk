@@ -26,3 +26,4 @@ annotatedXML <- annotateDuplicates(
   )
 }
 }
+

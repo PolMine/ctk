@@ -1,7 +1,7 @@
 #' @include pipe_class.R
 NULL
 
-#' @importFrom readr read_lines write_lines
+#' @importFrom readr read_lines write_lines locale
 #' @import stringi
 setGeneric("CoNLL2vrt", function(.Object, ...) standardGeneric("CoNLL2vrt"))
 

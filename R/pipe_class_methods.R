@@ -14,6 +14,7 @@ setMethod("show", "pipe", function(object){
 
 #' @exportMethod summary
 #' @rdname pipe
+#' @importFrom stats setNames
 setMethod("summary", "pipe", function(object){
   subdirs <- list.dirs(object@projectDir, full.names=FALSE)
   subdirs <- subdirs[which(subdirs != c(""))]

@@ -35,3 +35,4 @@ unpack(pkg, verbose = TRUE)
 \description{
 create R data package with corpus
 }
+
