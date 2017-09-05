@@ -46,4 +46,3 @@ bt <- plprbtpdf("/home/blaette/plprbtpdf")
 tokenize(bt, sourceDir="xmlCwb", targetDir="tmp")
 }
 }
-

@@ -3,9 +3,9 @@
 \docType{methods}
 \name{encode}
 \alias{encode}
-\alias{encode,Regions-method}
 \alias{encode,character-method}
 \alias{encode,pipe-method}
+\alias{encode,regions-method}
 \title{Encode corpus (CWB import).}
 \usage{
 encode(.Object, ...)
@@ -17,7 +17,7 @@ encode(.Object, ...)
 \S4method{encode}{pipe}(.Object, sourceDir, corpus, encoding, xml = TRUE,
   verbose = TRUE, embedding = "0", exec = TRUE, ...)
 
-\S4method{encode}{Regions}(.Object, filename = NULL, verbose = TRUE)
+\S4method{encode}{regions}(.Object, filename = NULL, verbose = TRUE)
 }
 \arguments{
 \item{.Object}{a character vector}
@@ -44,4 +44,3 @@ encode(.Object, ...)
 This is a wrapper for the \code{cwb-encode} and \code{cwb-make} command line tools. 
 The calls are generated and executed (via a system call).
 }
-

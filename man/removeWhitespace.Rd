@@ -9,4 +9,3 @@ removeWhitespace(x, rmBlankLines = TRUE)
 \description{
 remove leading and trailing whitespace of a character vector
 }
-

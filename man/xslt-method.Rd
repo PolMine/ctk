@@ -20,4 +20,3 @@ xslt(.Object, ...)
 \description{
 perform XSL transformation
 }
-

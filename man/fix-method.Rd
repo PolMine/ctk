@@ -2,9 +2,9 @@
 % Please edit documentation in R/fix_method.R
 \docType{methods}
 \name{fix,pipe-method}
-\alias{fix}
 \alias{fix,pipe-method}
 \alias{fix-method}
+\alias{fix}
 \title{Fix vrt files for CWB import.}
 \usage{
 \S4method{fix}{pipe}(x, sourceDir, targetDir, encoding = "UTF-8",
@@ -39,4 +39,3 @@ inter alia.
 Before doing respective corrections, the method tests whether there is any text at
 all in the files. Empty files (files that contain nothing but XML tags) are dropped.
 }
-

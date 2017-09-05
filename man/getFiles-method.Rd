@@ -35,4 +35,3 @@
 \description{
 get files from several directories
 }
-
