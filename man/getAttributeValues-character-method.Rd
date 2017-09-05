@@ -36,4 +36,3 @@ If attrs is a character vector of length 1, a character vector, a matrix otherwi
 \description{
 Get values of attributes of a XML node in files.
 }
-

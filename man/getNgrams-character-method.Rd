@@ -32,4 +32,3 @@ noChars <- characterCount(xmlDir, toLower=TRUE, progress=TRUE, verbose=TRUE, mc=
 ngramMatrix <- getNgrams(xmlDir, charCount=noChars, nChar=10, progress=TRUE, mc=3, verbose=TRUE)
 }
 }
-

@@ -29,4 +29,3 @@
 Replace characters that do not conform to UTF-8 encoding. If txt is NULL, all files
 in the source dir are processed.
 }
-

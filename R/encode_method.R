@@ -20,6 +20,7 @@ setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 #' @param verbose defaults to TRUE
 #' @rdname encode-method
 #' @exportMethod encode
+#' @importClassesFrom polmineR regions
 setMethod("encode", "character", function(.Object, corpus = "FOO", registry = Sys.getenv("CORPUS_REGISTRY"), sAttributes, embedding = "0", encoding = "utf8", xml = TRUE, exec = TRUE, verbose = TRUE, ...){
   tmp <- unlist(strsplit(registry, "/"))
   cwbDirs <- list.dirs(paste("/", paste(tmp[2:(length(tmp)-1)], collapse="/"), sep=""), recursive=FALSE)
@@ -98,7 +99,7 @@ setMethod("encode", "pipe", function(.Object, sourceDir, corpus, encoding, xml =
 
 #' @rdname encode-method
 #' @importFrom data.table data.table setorder setnames
-setMethod("encode", "Regions", function(.Object, filename = NULL, verbose = TRUE){
+setMethod("encode", "regions", function(.Object, filename = NULL, verbose = TRUE){
   cposDT <- .Object@cpos[!is.na(cpos_right)]
   cposDT[, "index" := c(1:nrow(cposDT)), with = FALSE]
   setkeyv(cposDT, cols = c("cpos_right", "cpos_left"))

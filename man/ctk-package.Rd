@@ -4,6 +4,7 @@
 \name{ctk}
 \alias{ctk}
 \alias{ctk-package}
+\alias{ctk-package}
 \title{ctk-package}
 \description{
 Tools for importing XML into the CWB.
@@ -37,4 +38,3 @@ encode(taz, corpus = "taz2", sourceDir = "vrt5", sample = 500, embedding = "10",
 \author{
 Andreas Blaette
 }
-

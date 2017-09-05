@@ -16,4 +16,3 @@
 \description{
 get a list with sAttributes from files
 }
-
