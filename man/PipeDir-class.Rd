@@ -6,11 +6,22 @@
 \alias{Pipe}
 \title{Pipe for corpus preparation.}
 \arguments{
-\item{sourceDir}{a subdirectory of the pipeDir where files to be processed
+\item{dir}{the pipe directory}
+
+\item{threads}{an integer, the number of threads to use}
+
+\item{metadata}{a named list with xpath expressions that is passed into the
+xmlToDT function to extract metadata from XML documents}
+
+\item{sourceDir}{a subdirectory of the pipeDir where files to be processed 
 are located}
 
 \item{targetDir}{a subdirectory of the pipeDir where processed output is
 stored}
+
+\item{cols}{columns that will serve as input to generate p- and s-attributes}
+
+\item{corpus}{name of the CWB corpus to create}
 }
 \description{
 Pipe for corpus preparation.
@@ -18,6 +29,13 @@ Pipe for corpus preparation.
 \section{Fields}{
 
 \describe{
+\item{\code{dir}}{a pipe directory, different processing stages of the corpus will be kept in
+subdirectories of this directory}
+
+\item{\code{time}}{a data.frame with information that different processing stages have consumed}
+
+\item{\code{threads}}{an integer, the number of cores to use}
+
 \item{\code{basetable}}{a \code{data.table} that includes metadata and a column
 'text' with the full text of the corpus}
 

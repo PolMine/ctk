@@ -24,19 +24,34 @@ CoreNLP <- setRefClass(
   
   "CoreNLP",
   
-  fields = list(
+  # fields = list(
+  #   
+  #   tagger = "jobjRef",
+  #   xmlifier = "jobjRef",
+  #   jsonifier = "jobjRef",
+  #   writer = "jobjRef",
+  #   append = "logical",
+  #   method = "character",
+  #   colsToKeep = "character",
+  #   destfile = "character",
+  #   logfile = "character"
+  #   
+  # ),
+  
+  fields = c(
     
-    tagger = "jobjRef",
-    xmlifier = "jobjRef",
-    jsonifier = "jobjRef",
-    writer = "jobjRef",
-    append = "logical",
-    method = "character",
-    colsToKeep = "character",
-    destfile = "character",
-    logfile = "character"
+    "tagger",
+    "xmlifier",
+    "jsonifier",
+    "writer",
+    "append",
+    "method",
+    "colsToKeep",
+    "destfile",
+    "logfile"
     
   ),
+  
   
   methods = list(
     
@@ -88,8 +103,8 @@ CoreNLP <- setRefClass(
         if (method == "txt"){
           .self$writer <- new(
             J("java.io.PrintWriter"),
-            .jnew("java.io.FileOutputStream",
-                  .jnew("java.io.File", filename),
+            rJava::.jnew("java.io.FileOutputStream",
+                  rJava::.jnew("java.io.File", filename),
                   TRUE)
           )
         }
@@ -98,19 +113,19 @@ CoreNLP <- setRefClass(
     },
     
     annotationToXML = function(anno){
-      doc <- .jcall(.self$xmlifier, "Lnu/xom/Document;", "annotationToDoc", anno, .self$tagger)
-      xml <- .jcall(doc, "Ljava/lang/String;", "toXML")
+      doc <- rJava::.jcall(.self$xmlifier, "Lnu/xom/Document;", "annotationToDoc", anno, .self$tagger)
+      xml <- rJava::.jcall(doc, "Ljava/lang/String;", "toXML")
       df <- coreNLP::getToken(coreNLP:::parseAnnoXML(xml))
       colnames(df) <- tolower(colnames(df))
       as.data.table(df[, colsToKeep])
     },
     
-    annotationToJSON = function(anno, chunk = NULL){
-      jsonString <- .jcall(.self$jsonifier, "Ljava/lang/String;", "print", anno)
+    annotationToJSON = function(anno, id = NULL){
+      jsonString <- rJava::.jcall(.self$jsonifier, "Ljava/lang/String;", "print", anno)
       jsonString <- gsub("\\s+", " ", jsonString)
-      if (!is.null(chunk)){
-        stopifnot(is.numeric(chunk))
-        jsonString <- sprintf('{"chunk": %d, %s', chunk, substr(jsonString, 2, nchar(jsonString)))
+      if (!is.null(id)){
+        stopifnot(is.numeric(id))
+        jsonString <- sprintf('{"id": %d, %s', id, substr(jsonString, 2, nchar(jsonString)))
       }
       cat(jsonString, "\n", file = .self$destfile, append = .self$append)
       if (.self$append == FALSE){
@@ -122,9 +137,9 @@ CoreNLP <- setRefClass(
     
     annotationToTXT = function(anno){
       if (.self$append == FALSE){
-        .self$writer <- .jnew("java.io.PrintWriter", filename <- tempfile())
+        .self$writer <- rJava::.jnew("java.io.PrintWriter", filename <- tempfile())
       }
-      .jcall(.self$tagger, "V", "prettyPrint", anno, .self$writer)
+      rJava::.jcall(.self$tagger, "V", "prettyPrint", anno, .self$writer)
       # .jmethods(writer, "V", "close")
       if (.self$append == FALSE){
         return( .self$parsePrettyPrint(filename) )
@@ -144,12 +159,12 @@ CoreNLP <- setRefClass(
       x
     },
     
-    annotate = function(txt, chunk = NULL, purge = TRUE){
+    annotate = function(txt, id = NULL, purge = TRUE){
       if (purge) txt <- .self$purge(txt)
       anno <- rJava::.jcall(.self$tagger, "Ledu/stanford/nlp/pipeline/Annotation;", "process", txt)
       switch(.self$method,
              xml = .self$annotationToXML(anno),
-             json = .self$annotationToJSON(anno, chunk = chunk),
+             json = .self$annotationToJSON(anno, id = id),
              txt = .self$annotationToTXT(anno)
       )
     }

@@ -7,10 +7,10 @@
 #' @field basetable a \code{data.table} that includes metadata and a column
 #'   'text' with the full text of the corpus
 #' @field metadata a \code{data.table} with the metadata for the corpus; a
-#'   column 'chunk' serves as an id to link the metadata table with the other
+#'   column 'id' serves as an id to link the metadata table with the other
 #'   tables for corpus preparation
 #' @field texttable a \code{data.table} derived from the basetable, includes
-#'   only the column 'chunk' with the id, and the column 'text' with the
+#'   only the column 'id' with the id, and the column 'text' with the
 #'   unparsed full text
 #' @field tokenstream a \code{table} with a columns with the tokenized text and
 #'   further annotation of the corpus
@@ -47,6 +47,9 @@ Pipe <- setRefClass(
   methods = list(
     
     initialize = function(dir, threads = 1L){
+      
+      "Initialize a new Pipe object."
+      
       if (!dir.exists(dir)) stop(" directory does not exist")
       .self$dir <- dir
       .self$time <- data.frame(
@@ -70,6 +73,7 @@ Pipe <- setRefClass(
         )
       .self$basetable <- rbindlist(dtList, fill = TRUE)
       rm(dtList)
+      .self$basetable[, id := 1:nrow(P$basetable)]
       
       .self$updateProcessingTime(started = started, call = "xmlToDT")
       invisible(.self$basetable)
@@ -77,16 +81,20 @@ Pipe <- setRefClass(
     
     dissectBastable = function(targetDir = "csv"){
       
-      message("... making and writing texttable.csv")
-      .self$texttable <- .self$basetable[, c("chunk", "text"), with = TRUE]
-      data.table::fwrite(
+      "Dissect basetable into 'texttable' and 'metadata' as more memory efficient ways
+      for keeping the data. If targetDir is not NULL, the resulting tables will be
+      stored as csv files in the respective subdirectory of the pipe directory."
+      
+      message("... extracting texttable")
+      .self$texttable <- .self$basetable[, c("id", "text"), with = TRUE]
+      if (!is.null(targetDir)) data.table::fwrite(
         .self$texttable,
         file = file.path(.self$dir, targetDir, "texttable.csv")
         )
       
-      message("... making and writing metadata.csv")
+      message("... extracting metadata")
       .self$metadata <- .self$basetable[, text := NULL]
-      data.table::fwrite(
+      if (!is.null(targetDir)) data.table::fwrite(
         .self$metadata,
         file = file.path(.self$dir, targetDir, "metadata.csv"),
         quote = TRUE
@@ -95,11 +103,14 @@ Pipe <- setRefClass(
     
     corenlp = function(sourceDir = "csv", targetDir = "ndjson"){
       
-      "Use Stanford CoreNLP."
+      "Use Stanford CoreNLP to annotate . "
       
+      if (nrow(.self$texttable) == 0){
+        stop("texttable needs to be present in the respective slot, but is not available")
+      }
+      stopifnot(c("id", "text") %in% colnames(.self$texttable))
       started <- Sys.time()
-      foo <- 1
-      if (foo == 0){
+      if (.self$threads == 1){
         Annotator <- CoreNLP$new(
           method = "json",
           filename = file.path(.self$dir, targetDir, "annotation.ndjson"),
@@ -107,10 +118,18 @@ Pipe <- setRefClass(
         )
         dummy <- pbapply::pblapply(
           1:nrow(.self$texttable),
-          function(i) Annotator$annotate(.self$texttable[["text"]][i], chunk = i)
+          function(i) Annotator$annotate(.self$texttable[["text"]][i], id = i)
         )
-      } else {
+      } else if (.self$threads > 1){
         
+        if (rJava:::.check.JVM()){
+          message("JVM already up and running - parallelisation very likely to fail!")
+        } else {
+          message("")
+        }
+        if (Sys.getenv("RSTUDIO") == "1"){
+          warning("for some unknown reason, parallelization does not work when RStudio is running")
+        }
         chunks <- text2vec::split_into(1:nrow(.self$texttable), n = .self$threads)
         outfiles <- sprintf(
           file.path(.self$dir, targetDir, "corenlp_%d.ndjson"),
@@ -125,7 +144,7 @@ Pipe <- setRefClass(
               stanfordDir = getOption("ctk.stanfordDir"),
               propertiesFile = getOption("ctk.propertiesFile")
             )
-            lapply(chunks[[i]], function(j) Annotator$annotate(.self$texttable[["text"]][j], chunk = j))
+            lapply(chunks[[i]], function(j) Annotator$annotate(.self$texttable[["text"]][j], id = j))
             return( outfiles[i] )
           }
           , mc.cores = .self$threads
@@ -140,10 +159,12 @@ Pipe <- setRefClass(
       
       started <- Sys.time()
       filenames <- Sys.glob(sprintf("%s/*.ndjson", file.path(.self$dir, "ndjson")))
-      JsonParser <- NDJSON$new(
-        destfile = file.path(.self$dir, targetDir, "tokenstream.csv"),
-        logfile = file.path(.self$dir, targetDir, "parsingerrors.log")
-        )
+      message("... number of files to process: ", length(filenames))
+      destfile <- file.path(.self$dir, targetDir, "tokenstream.csv")
+      message("... destfile: ", destfile)
+      logfile <- file.path(.self$dir, targetDir, "parsingerrors.log")
+      message("... logfile: ", logfile)
+      JsonParser <- NDJSON$new(destfile = destfile, logfile = logfile)
       JsonParser$processFiles(filenames)
       .self$updateProcessingTime(started = started, call = "xmlToDT")
       
@@ -152,19 +173,19 @@ Pipe <- setRefClass(
     addCposToMetadataTable = function(){
       
       .self$tokenstream[, cpos := 0:(nrow(.self$tokenstream) - 1)]
-      grpn = uniqueN(.self$tokenstream[["chunk"]])
+      grpn = uniqueN(.self$tokenstream[["id"]])
       pb <- txtProgressBar(min = 0, max = grpn, style = 3)
       cposDT <- .self$tokenstream[
         ,{
           setTxtProgressBar(pb, .GRP);
           list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))
-        }, by = "chunk"
+        }, by = "id"
         ]
       close(pb)
-      setkeyv(cposDT, cols = "chunk")
+      setkeyv(cposDT, cols = "id")
       
       # dtMetadata <- data.table::fread("~/Lab/tmp/metadata.csv")
-      setkeyv(.self$metadata, cols = "chunk")
+      setkeyv(.self$metadata, cols = "id")
       enhancedMetadataTable <- .self$metadata[cposDT]
       .self$metadata <- enhancedMetadataTable
       

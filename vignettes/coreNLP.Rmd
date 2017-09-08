@@ -19,14 +19,14 @@ options(java.parameters = "-Xmx4g")
 options(ctk.stanfordDir = "/opt/stanford-corenlp/stanford-corenlp-full-2017-06-09")
 options(ctk.propertiesFile = "/opt/stanford-corenlp/StanfordCoreNLP-german.properties")
 
-noCores <- parallel::detectCores() - 1
+noCores <- parallel::detectCores() - 1L
 ```
 
 
 # Initialize Pipe
 
 ```{r}
-P <- Pipe$new(dir = "~/Lab/tmp/testpipe/")
+P <- Pipe$new(dir = "~/Lab/tmp/testpipe", threads = noCores)
 ```
 
 # Generate Basetable
@@ -44,14 +44,14 @@ Some adjustments and some cleaning.
 
 ```{r}
 P$basetable <- P$basetable[is.na(speaker)][, speaker := NULL] # remove text in speaker tag
-P$basetable[, chunk := 1:nrow(P$basetable)] # add column with chunks
+P$basetable[, id := 1:nrow(P$basetable)] # add column with chunks
 for (x in c("div_what", "div_desc", "body", "TEI", "p")) P$basetable[[x]] <- NULL # remove unnecessary columns
 P$basetable[["stage_type"]] <- ifelse(is.na(dt2[["stage_type"]]), "speech", "interjection")
 ```
 
 
 ```{r}
-P$dissectMegatable()
+P$dissectBasetable()
 P$size()
 ```
 
@@ -60,7 +60,6 @@ P$size()
 
 ```{r}
 P$texttable <- data.table::fread("~/Lab/tmp/testpipe/csv/texttable.csv")
-P$threads <- 1L
 P$corenlp()
 ```
 
