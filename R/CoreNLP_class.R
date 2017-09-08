@@ -41,7 +41,8 @@ CoreNLP <- setRefClass(
   methods = list(
     
     initialize = function(
-      stanfordDir = NULL, propertiesFile = NULL, 
+      stanfordDir = getOption("ctk.stanfordDir"),
+      propertiesFile = getOption("ctk.propertiesFile"), 
       method = c("txt", "json", "xml"),
       colsToKeep = c("sentence", "id", "token", "pos", "ner"),
       filename = NULL
@@ -49,8 +50,8 @@ CoreNLP <- setRefClass(
       
       .self$colsToKeep <- colsToKeep
       
-      jvmStatus <- rJava::.jinit() # does it harm when called again?
-      print(jvmStatus)
+      jvmStatus <- rJava::.jinit(force.init = TRUE) # does it harm when called again?
+      message("Status of the Java Virtual Machine: ", jvmStatus)
       
       # add stanford jars to classpath
       if (is.null(stanfordDir)){
@@ -130,49 +131,6 @@ CoreNLP <- setRefClass(
       } else {
         return( NULL )
       }
-    },
-    
-    parseJson = function(x, colsToKeep = c("sentence", "id", "token", "pos", "ner")){
-      # run the parsing within try - coding issues may cause problems
-      dat <- try( jsonlite::fromJSON(x) )
-      if (is(dat)[1] == "try-error") return( NULL )
-      dt <- rbindlist(
-        lapply(
-          1:length(dat$sentences$tokens),
-          function(i) as.data.table(dat$sentences$tokens[[i]])[, "sentence" := i]
-        )
-      )
-      if ("chunk" %in% names(dat)){
-        dt[, "chunk" := dat[["chunk"]]]
-        cols <- c("chunk", colsToKeep)
-      } else {
-        cols <- colsToKeep
-      }
-      setnames(dt, old = c("index", "word"), new = c("id", "token"))
-      dt[, colsToKeep, with = FALSE]
-    },
-    
-    parsePrettyPrint = function(x = NULL, filename = NULL, mc = 1){
-      if (is.null(x)) x <- readLines(filename)
-      chunks <- cut(
-        1:length(x),
-        c(grep("^Sentence\\s#\\d+", x), length(x)),
-        include.lowest = TRUE, right = FALSE
-      )
-      dts <- pbapply:pblapply(
-        split(x, f = chunks),
-        function(chunk){
-          txt <- chunk[grepl("^\\[.*\\]$", chunk)] # get lines with annotation
-          regex <- "^.*?Text=(.*?)\\s.*\\sPartOfSpeech=(.*?)\\sNamedEntityTag=(.*?)\\]"
-          df <- stringi::stri_match(txt, regex = regex)
-          dt <- as.data.table(df)[,2:4, with = FALSE]
-          colnames(dt) <- c("token", "pos", "ner")
-          dt
-        },
-        cl = mc
-      )
-      # rbindlist(dts)
-      dts
     },
     
     purge = function(x){

@@ -14,38 +14,22 @@ vignette: >
 The java.parameters need to be set before loading the packages: A JVM is initialized when ctk imports from then openNLP package, and if the JVM is not provided with sufficient memory on this occasion, the later initialization of corenlp will hit the memory limit.
   
 ```{r}
+library(ctk)
 options(java.parameters = "-Xmx4g")  
-stanfordDir = "/opt/stanford-corenlp/stanford-corenlp-full-2017-06-09"
-propertiesFile = "/opt/stanford-corenlp/StanfordCoreNLP-german.properties"
-```
+options(ctk.stanfordDir = "/opt/stanford-corenlp/stanford-corenlp-full-2017-06-09")
+options(ctk.propertiesFile = "/opt/stanford-corenlp/StanfordCoreNLP-german.properties")
 
-```{r}
-filenames <- Sys.glob(sprintf("%s/*.xml", "~/Lab/gitlab/plprbttxt_tei"))
-filenames <- filenames[1:2]
-```
-
-```{r}
 noCores <- parallel::detectCores() - 1
 ```
 
 
-# Loading required packages
+# Initialize Pipe
 
 ```{r}
-library(ctk)
-library(data.table)
-library(magrittr)
-library(xml2)
-library(stringi)
-library(rJava)
-library(pbapply)
-library(parallel)
-library(readr)
-library(text2vec)
+P <- Pipe$new(dir = "~/Lab/tmp/testpipe/")
 ```
 
-
-# Generate data.table
+# Generate Basetable
 
 ```{r}
 metadata <- c(
@@ -53,27 +37,63 @@ metadata <- c(
   session = "//titleStmt/sessionNo",
   date = "//publicationStmt/date"
 )
+P$xmlToBasetable(metadata = metadata)
+```
+
+Some adjustments and some cleaning.
+
+```{r}
+P$basetable <- P$basetable[is.na(speaker)][, speaker := NULL] # remove text in speaker tag
+P$basetable[, chunk := 1:nrow(P$basetable)] # add column with chunks
+for (x in c("div_what", "div_desc", "body", "TEI", "p")) P$basetable[[x]] <- NULL # remove unnecessary columns
+P$basetable[["stage_type"]] <- ifelse(is.na(dt2[["stage_type"]]), "speech", "interjection")
 ```
 
 
 ```{r}
-dtList <- pbapply::pblapply(filenames, function(x) xmlToDT(x, meta = metadata), cl = noCores)
-dt <- rbindlist(dtList, fill = TRUE)
-rm(dtList)
+P$dissectMegatable()
+P$size()
 ```
 
-Some beautification ...
+
+# Annotation using Stanford CoreNLP
 
 ```{r}
-dt2 <- dt[is.na(speaker)][, speaker := NULL] # remove text in speaker tag
-dt2[, chunk := 1:nrow(dt2)] # add column with chunks
-for (x in c("div_what", "div_desc", "body", "TEI", "p")) dt2[[x]] <- NULL
-dt2[["stage_type"]] <- ifelse(is.na(dt2[["stage_type"]]), "speech", "interjection")
-rm(dt)
+P$texttable <- data.table::fread("~/Lab/tmp/testpipe/csv/texttable.csv")
+P$threads <- 1L
+P$corenlp()
 ```
 
-We will continue to work with dt2
+# NDJSON to csv
 
+We have 'ndjson' output at this stage. This needs to be turned into a vertical / tabular format. No parallelization here so far, as the procedure is sufficiently fast (~ 1,5 h).
+
+```{r}
+P$ndjsonToDf()
+```
+
+
+# Turn data.table into a CWB indexed corpus
+
+```{r}
+options("polmineR.cwb-regedit" = FALSE)
+
+P$tokenstream <-  data.table::fread(file.path(P$dir, "csv", "tokenstream.csv"))
+P$metadata <- data.table::fread(file.path(P$dir, "csv", "metadata.csv"))
+setnames(P$metadata, old = c("sp_party", "sp_name"), new = c("party", "name"))
+
+P$addCposToMetadataTable()
+P$encodePAttributes("FOO", cols = c("word", "pos"))
+P$encodeSAttributes("FOO", cols = c("party", "name", "lp", "session", "date"))
+```
+
+
+```{r}
+use() # to make the new corpus available
+```
+
+
+# Annex
 
 # Annotation: Without parallelization
 
@@ -103,77 +123,59 @@ tokenStreamDT <- rbindlist(dts)
 ```
 
 
-# With parallelization
 
-processing 1100 plenary protocols ~ 2h 
 
 ```{r}
-chunks <- text2vec::split_into(1:nrow(dt2), n = noCores)
 started <- Sys.time()
-filenames <- parallel::mclapply(
+dfs <- lapply(
+filenames,
+function(filename){
+  con <- file(filename, open = "r")
+  df <- jsonlite::stream_in(con)
+  close(con)
+  do.call(rbind, lapply(df[,2], function(x) do.call(rbind, x[["tokens"]])))
+}
+)
+Sys.time() - started
+```
+
+
+# Annotation using Stanford CoreNLP
+
+It is best to run this in a screen (11 core: ~ 2h)
+
+For some unknown reason, using the CoreNLP class in parallel mode when ctk is loaded as a package does not work properly. Therefore, the class is courced in.
+
+```{r}
+library(rJava)
+source("~/Lab/github/ctk/R/CoreNLP_class.R")
+```
+
+```{r}
+dtText <- P$texttable
+chunks <- text2vec::split_into(1:nrow(dtText), n = noCores)
+filenames <- sprintf(
+  file.path(P$dir, "ndjson", "corenlp_%d.ndjson"),
+  1:noCores
+  )
+```
+
+```{r}
+started <- Sys.time()
+dummy <- lapply(
   1:length(chunks),
   function(i){
     options(java.parameters = "-Xmx4g")
-    filename <- sprintf("~/Lab/tmp/coreNLP_%d.json", i)
     A <- CoreNLP$new(
-      method = "json", filename = filename,
+      method = "json", filename = filenames[i],
       stanfordDir = stanfordDir, propertiesFile = propertiesFile
       )
-    lapply(chunks[[i]], function(j) A$annotate(dt2[["text"]][j], chunk = j))
+    lapply(chunks[[i]], function(j) A$annotate(dtText[["text"]][j], chunk = j))
     return( filename )
-  },
-  mc.cores = noCores
+  }
+  # , mc.cores = noCores
 )
 ended <- Sys.time()
 ended - started
 ```
 
-
-```{r}
-J <- unlist(lapply(filenames, readr::read_lines))
-```
-
-
-```{r}
-CNLP <- CoreNLP$new(method = "json")
-dts <- pbapply::pblapply(J, CNLP$parseJson, cl = noCores) # parallelization works nicely here
-tokenStreamDT <- rbindlist(dts)
-```
-
-
-# Turn data.table into a CWB indexed corpus
-
-```{r}
-tokenStreamDT[, cpos := 0:(nrow(tokenStreamDT) - 1)]
-```
-
-Encode the p-attributes ("word" and "pos", so far).
-
-```{r}
-encode(tokenStreamDT[["token"]], corpus = "FOO", pAttribute = "word", encoding = "UTF-8")
-encode(tokenStreamDT[["pos"]], corpus = "FOO", pAttribute = "pos")
-```
-
-Encode the s-attributes.
-
-```{r}
-cpos <- tokenStreamDT[
-  ,{list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))}, by = "chunk"
-  ]
-setkeyv(cpos, cols = "chunk")
-setkeyv(dt2, cols = "chunk")
-dt3 <- dt2[cpos]
-options("polmineR.cwb-regedit" = FALSE)
-setnames(dt3, old = c("sp_party", "sp_name"), new = c("party", "name"))
-```
-
-```{r}
-for (col in c("party", "name", "lp", "session", "date")){
-  dtEnc <- dt3[, c("cpos_left", "cpos_right", col), with = FALSE]
-  encode(dtEnc, corpus = "FOO", sAttribute = col)
-}
-```
-
-```{r}
-use()
-```
