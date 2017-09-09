@@ -2,6 +2,11 @@ TODO
 ====
 * dirApply -> error when all files have been processed?
 
+v0.2.20
+=======
+* NDJSON class has been added
+* CoreNLP class introduced
+
 v0.2.3
 ======
 * check method renamed as getAttributeValues, and using dirApply

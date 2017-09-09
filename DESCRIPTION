@@ -16,17 +16,20 @@ Imports:
     slam,
     stringi,
     data.table,
-    NLP,
-    openNLP,
     xml2
 Suggests:
-    polmineR
+    polmineR,
+    NLP,
+    openNLP
 LazyData: yes
 License: CC BY-NC-SA 4.0 | file LICENSE
 Collate: 
     'pipe_class.R'
     'CoNLL2vrt_method.R'
     'CoreNLP_class.R'
+    'NDJSON_class.R'
+    'PipeDir_class.R'
+    'PrettyPrintProcessor.R'
     'annotate_method.R'
     'anyToXml_method.R'
     'as.package_function.R'
@@ -71,4 +74,5 @@ Collate:
     'vrtCheck_method.R'
     'xmlToDT_function.R'
     'xslt_method.R'
+    'zzz.R'
 RoxygenNote: 6.0.1
