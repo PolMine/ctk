@@ -28,11 +28,11 @@
 #' 
 #' @importFrom pbapply pblapply
 #' @importFrom parallel mclapply
-#' @importFrom data.table data.table rbindlist fread fwrite
+#' @importFrom data.table data.table rbindlist fread fwrite uniqueN
 #' @export Pipe
 Pipe <- setRefClass(
   
-  "PipeDir",
+  "Pipe",
   
   fields = list(
     dir = "character",
@@ -88,7 +88,7 @@ Pipe <- setRefClass(
       invisible(.self$basetable)
     },
     
-    dissectBastable = function(targetDir = "csv"){
+    dissectBasetable = function(targetDir = "csv"){
       
       "Dissect basetable into 'texttable' and 'metadata' as more memory efficient ways
       for keeping the data. If targetDir is not NULL, the resulting tables will be
@@ -179,10 +179,23 @@ Pipe <- setRefClass(
       
     },
     
+    treetagger = function(sourceDir = "tok", targetDir = "vrt", lang = "de", ...){
+      
+      "Annotate all files in sourceDir using treetagger, and save results to targetDir."
+      
+      dirApply(
+        f = .treetagger,
+        sourceDir = file.path(.self$dir, sourceDir),
+        targetDir=file.path(.self$dir, targetDir),
+        param = list(lang = lang),
+        ...
+      )
+    },
+    
     addCposToMetadataTable = function(){
       
       .self$tokenstream[, cpos := 0:(nrow(.self$tokenstream) - 1)]
-      grpn = uniqueN(.self$tokenstream[["id"]])
+      grpn <- uniqueN(.self$tokenstream[["id"]])
       pb <- txtProgressBar(min = 0, max = grpn, style = 3)
       cposDT <- .self$tokenstream[
         ,{
