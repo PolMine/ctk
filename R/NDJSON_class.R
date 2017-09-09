@@ -78,9 +78,9 @@ NDJSON <- setRefClass(
         df <- do.call(rbind, dfs)
         
         # add chunk number, if present, and 
-        if ("chunk" %in% names(dat)){
-          df[["chunk"]] <- dat[["chunk"]]
-          cols <- c("chunk", .self$colsToKeep)
+        if ("id" %in% names(dat)){
+          df[["id"]] <- dat[["id"]]
+          cols <- c("id", .self$colsToKeep)
         } else {
           cols <- .self$colsToKeep
         }

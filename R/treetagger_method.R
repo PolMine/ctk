@@ -14,9 +14,10 @@ setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
 #' @param lang the language to use
 #' @param verbose logical, defaults to TRUE
 #' @rdname treetagger-method
-#' @exportMethod treetagger
+#' @export .treetagger
+#' @name treetagger
 #' @importFrom utils capture.output
-.treetaggerWorker <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
+.treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
   if (is.null(targetDir)){
     targetDir <- tempdir()
     returnString <- TRUE
@@ -91,15 +92,10 @@ setMethod("treetagger", "pipe", function(
     retval <- NULL
   } else {
     retval <- dirApply(
-      f=.treetaggerWorker,
-      sourceDir=file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
-      param=list(lang=lang), ...
+      f=.treetagger,
+      sourceDir = file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
+      param = list(lang=lang), ...
       )
   }
   retval
-})
-
-setMethod("treetagger", "character", function(.Object, lang="de", fix = TRUE){
-  vrtRaw <- .treetaggerWorker(filename = .Object, param = list(lang=lang))
-  fixVrt(vrtRaw)
 })
