@@ -49,7 +49,7 @@ CoreNLP <- setRefClass(
       
       .self$colsToKeep <- colsToKeep
       
-      jvmStatus <- rJava::.jinit() # does it harm when called again?
+      jvmStatus <- rJava::.jinit(force.init = TRUE) # does it harm when called again?
       print(jvmStatus)
       
       # add stanford jars to classpath
