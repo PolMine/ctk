@@ -1,44 +1,42 @@
-#' @exportMethod getFiles
-setGeneric("getFiles", function(.Object, ...) standardGeneric("getFiles"))
-
-#' get files from several directories
+#' Get files from several directories.
 #'  
-#' @param .Object a pipe class object
+#' Files in the sourceDir are copied to the targetDir. The function
+#' offers options for a robust process.
+#'  
 #' @param sourceDir source directories
-#' @param targetDir targetDir in the projectDir
+#' @param targetDir targetDir target directory
 #' @param recursive whether to check subdirectories
 #' @param exclude I do not remember
 #' @param rectify logical, whether to get rid of special characters in filenames
 #' @param method either list.files or find
-#' @param pattern the pattern for the filenames
+#' @param pattern a pattern filenames should match, passed into \code{list.files}
 #' @param verbose logical, whether to be verbose
 #' @param progress whether to show progress bar
 #' @param failsafe whether to be robust
-#' @rdname getFiles-method
+#' @rdname getFiles
 #' @name getFiles
 #' @import pbapply
-setMethod(
-  "getFiles", "pipe",
-  function(
-    .Object, sourceDir, targetDir,
-    recursive=TRUE, exclude=NULL, rectify=TRUE, method="find",
-    pattern="html", verbose=T, progress=F, failsafe=FALSE
+#' @export .getFiles
+.getFiles <- function(
+    sourceDir, targetDir,
+    recursive = TRUE, exclude = NULL, rectify = TRUE, method = "find",
+    pattern = NULL, verbose = TRUE, progress = TRUE, failsafe = FALSE
     ){
-  Sys.setlocale(category="LC_ALL", locale="de_DE.UTF-8")
+  Sys.setlocale(category = "LC_ALL", locale = "de_DE.UTF-8")
   filesToGet <- unlist(
     lapply(sourceDir, function(x) {
       if (method == "list.files"){
-        toReturn <- list.files(x, recursive=recursive, pattern=pattern, full.names=TRUE)
+        toReturn <- list.files(x, recursive = recursive, pattern = pattern, full.names = TRUE)
       } else if (method == "find"){
         cmd <- paste(
           "find", x, "-name", paste('"*.', pattern, '"', sep=""), collapse=" "
           )
-        toReturn <- system(cmd, intern=TRUE)
+        toReturn <- system(cmd, intern = TRUE)
       }
       toReturn
     })
   )
-  filesToGetList <- strsplit(filesToGet, split="/")
+  filesToGetList <- strsplit(filesToGet, split = "/")
   message("Files to get: ", length(filesToGetList))
   if (rectify == TRUE){
     targetFilenames <- sapply(
@@ -62,27 +60,31 @@ setMethod(
     targetFilenames <- sapply(filesToGet, basename)
   }
   if (length(filesToGet) > 0){
-    foo <- pbapply::pblapply(
-      c(1: length(filesToGet)),
-      function(i) {
-        fileToGet <- filesToGet[i]
-        targetFilename <- targetFilenames[i]
-        if (verbose == T) message("... getting ", targetFilename)
-        targetFile <- file.path(.Object@projectDir, targetDir, targetFilename)
-        if (failsafe == FALSE){
-          file.copy(from=fileToGet, to = targetFile)
-        } else {
-          try(
-            file.copy(from=fileToGet, to= targetFile)
-            )
-        }
-        return(fileToGet)
-      })    
-    message("Number of files copied: ", length(foo))
+    fileGetter <- function(i) {
+      fileToGet <- filesToGet[i]
+      targetFilename <- targetFilenames[i]
+      if (verbose) message("... getting ", targetFilename)
+      targetFile <- file.path(targetDir, targetFilename)
+      if (failsafe == FALSE){
+        file.copy(from = fileToGet, to = targetFile)
+      } else {
+        try(
+          file.copy(from = fileToGet, to = targetFile)
+        )
+      }
+      return(fileToGet)
+    }
+    if (progress){
+      verbose <- FALSE
+      filesGot <- pbapply::pblapply(1:length(filesToGet), fileGetter)
+    } else {
+      filesGot <- lapply(1:length(filesToGet), fileGetter)
+    }
+      
+    message("Number of files copied: ", length(filesGot))
     invisible(targetFilenames)
   } else {
     message("no files to get")
-    return(character())
+    return( character() )
   }
-  
-})
+}

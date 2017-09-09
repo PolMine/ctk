@@ -9,24 +9,49 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Setting parameters and global variables
+## Setting parameters and global variables
 
-The java.parameters need to be set before loading the packages: A JVM is initialized when ctk imports from then openNLP package, and if the JVM is not provided with sufficient memory on this occasion, the later initialization of corenlp will hit the memory limit.
-  
 ```{r}
 library(ctk)
-options(java.parameters = "-Xmx4g")  
 options(ctk.stanfordDir = "/opt/stanford-corenlp/stanford-corenlp-full-2017-06-09")
 options(ctk.propertiesFile = "/opt/stanford-corenlp/StanfordCoreNLP-german.properties")
+```
 
+The java.parameters need to be set before a JVM is initialized.
+
+```{r}
+options(java.parameters = "-Xmx4g")
+```
+
+```{r}
 noCores <- parallel::detectCores() - 1L
 ```
+
 
 
 # Initialize Pipe
 
 ```{r}
-P <- Pipe$new(dir = "~/Lab/tmp/testpipe", threads = noCores)
+pipeDir <- "~/Lab/tmp/testpipe"
+```
+
+```{r}
+for (subdir in c("xml", "csv", "tok", "ndjson", "vrt")){
+  neededDir <- file.path(pipeDir, subdir)
+  if (!file.exists(neededDir)) dir.create(neededDir) 
+}
+```
+
+```{r}
+P <- Pipe$new(dir = pipeDir, threads = noCores)
+```
+
+```{r}
+sourceDirs <- c(
+  "~/Lab/gitlab/plprbttxt_tei",
+  "~/Lab/gitlab/plprbtpdf_tei"
+)
+P$getFiles(sourceDir = sourceDirs, pattern = "xml", targetDir = "xml")
 ```
 
 # Generate Basetable
@@ -71,6 +96,22 @@ We have 'ndjson' output at this stage. This needs to be turned into a vertical /
 P$ndjsonToDf()
 ```
 
+
+# treetagging
+
+```{r}
+P$tokenstream <-  data.table::fread(file.path(P$dir, "csv", "tokenstream.csv"))
+cat(
+  P$tokenstream[["word"]], sep = "\n",
+  file = file.path(P$dir, "tok", "tokenstream.vrt")
+)
+oldPipe <- new("pipe", projectDir = "~/Lab/tmp/testpipe")
+Sys.setenv("PATH_TREETAGGER" = "/opt/treetagger")
+treetagger(oldPipe, sourceDir = "tok", targetDir = "vrt")
+tt <- data.table::fread("~/Lab/tmp/testpipe/vrt/tokenstream.vrt", sep = "\t")
+P$tokenstream[["lemma"]] <- c("DUMMY", tt[[3]])
+# P$tokenstream[["pos2"]] <- c("DUMMY", tt[[2]])
+```
 
 # Turn data.table into a CWB indexed corpus
 

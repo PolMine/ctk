@@ -59,6 +59,15 @@ Pipe <- setRefClass(
       .self$threads <- threads
     },
     
+    getFiles = function(sourceDir, targetDir, ...){
+      
+      "Get/copy Files from several directories to the subdirectory of the pipeDir
+      defined by 'targetDir'."
+      
+      .getFiles(sourceDir = sourceDir, targetDir = file.path(.self$dir, targetDir), ...)
+      
+    },
+    
     xmlToBasetable = function(sourceDir = "xml", targetDir = "csv", metadata){
       
       "Extract text and metadata from XML documents, and keep the resulting
