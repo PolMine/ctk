@@ -13,7 +13,7 @@ vignette: >
 
 Run from following commands from a Unix shell (Linux / Mac OS).
 
-```{sh}
+```{sh eval = FALSE}
 mkdir /opt/stanford-corenlp
 cd /opt/stanford-corenlp
 wget http://nlp.stanford.edu/software/stanford-corenlp-full-2017-06-09.zip
@@ -34,7 +34,7 @@ nano StanfordCoreNLP-german.properties
 
 The treetagger website ()[http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/] offers an instruction how to install the treetagger. The following commands are based on this.
 
-```{r}
+```{sh eval = FALSE}
 mkdir /opt/treetagger
 cd /opt/treetagger
 wget http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/tree-tagger-MacOSX-3.2.tar.gz

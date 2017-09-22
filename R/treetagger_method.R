@@ -1,4 +1,4 @@
-#' Use TreeTagger.
+#' Use TreeTagger for linguistic annotation.
 #' 
 #' The argument \code{param} is a list passing the arguments \code{lang}, a 
 #' character vector that is expected to be "de", "fr", "it", or "en". The argument
@@ -6,35 +6,36 @@
 #' the treetagger scripts used, if \code{FALSE}, the input is expected to be
 #' tokenized already.
 #' 
-#' Depending whether targetDir is defined (i.e. not NULL), output is written to the
-#' file, or a character vector is returned. If sourceDir is NULL, filename will serve
+#' Depending whether targetDir is defined (i.e. not \code{NULL}), output is written to the
+#' file, or a character vector is returned. If sourceDir is \code{NULL}, filename will serve
 #' as the input character string. It will be written to a temporary file for further
 #' processing.
 #' 
-#' @param targetDir output directory
-#' @param lang the language to be used (defaults to 'de')
-#' @param treetaggerPath directory with the treetagger
-#' @param parallel whether to use parallel computing
-#' @param lang the language to use
+#' @param filename file to process, or a character vector (if sourceDir is NULL)
+#' @param targetDir output directory, if NULL, the processed input will be returned
+#' @param param a list that needs to include the language to be used (defaults to 'de') and a logical
+#' vector \code{tokenize} whether the input needs to be tokenized before tagging
 #' @param verbose logical, defaults to TRUE
-#' @rdname treetagger-method
-#' @export .treetagger
+#' @rdname treetagger
+#' @export treetagger
 #' @name treetagger
 #' @importFrom utils capture.output
-treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
+#' @importFrom tools file_path_sans_ext
+treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list(lang = "de", tokenize = TRUE)){
   
   stopifnot(param[["lang"]] %in% c("de", "fr", "it", "en"))
   stopifnot("tokenize" %in% names(param))
+  stopifnot(getOption("ctk.treetaggerDir") != "")
   
   startTime <- Sys.time()
   
   if (param[["tokenize"]] == TRUE){
     cmdFile <- switch(
       param[["lang"]],
-      de = file.path(Sys.getenv("PATH_TREETAGGER"), "cmd", "tree-tagger-german"),
-      fr = file.path(Sys.getenv("PATH_TREETAGGER"), "cmd", "tree.tagger-french"),
-      it = file.path(Sys.getenv("PATH_TREETAGGER"), "cmd", "tree-tagger-italian"),
-      en = file.path(Sys.getenv("PATH_TREETAGGER"), "cmd", "tree-tagger-english")
+      de = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-german"),
+      fr = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree.tagger-french"),
+      it = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-italian"),
+      en = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-english")
     )
     if (is.null(sourceDir)){
       if (!is.null(targetDir)) warning("If sourceDir is NULL, treetagger output is not written to a file!")
@@ -57,7 +58,7 @@ treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = F
         )
         cmd <- paste(cmdRaw, collapse = " ")
         system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
-        
+        return( Sys.time() - startTime)
       }
     }
   } else {
@@ -66,13 +67,13 @@ treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = F
     }
     parFile <- switch(
       param[["lang"]],
-      de = file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "german-utf8.par"),
-      fr = file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "french-utf8.par"),
-      it = file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "italian-utf8.par"),
-      en = file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "english-utf8.par")
+      de = file.path(getOption("ctk.treetaggerDir"), "lib", "german-utf8.par"),
+      fr = file.path(getOption("ctk.treetaggerDir"), "lib", "french-utf8.par"),
+      it = file.path(getOption("ctk.treetaggerDir"), "lib", "italian-utf8.par"),
+      en = file.path(getOption("ctk.treetaggerDir"), "lib", "english-utf8.par")
     )
     cmdRaw <- c(
-      file.path(Sys.getenv("PATH_TREETAGGER"), "bin", "tree-tagger"),
+      file.path(getOption("ctk.treetaggerDir"), "bin", "tree-tagger"),
       "-sgml", "-token", "-lemma",
       parFile,
       file.path(sourceDir, filename)

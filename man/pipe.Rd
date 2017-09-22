@@ -19,6 +19,9 @@ are located}
 \item{targetDir}{a subdirectory of the pipeDir where processed output is
 stored}
 
+\item{ignore.extension}{logical, whether to remove file extensions before
+checking whether files in \code{sourceDir} are present in \code{targetDir}}
+
 \item{corpus}{name of the CWB corpus to create}
 }
 \description{
@@ -69,10 +72,10 @@ For usage details see \bold{Methods, Arguments and Fiels} sections.
   directories indicated by to the subdirectory of the pipe directory defined
   by \code{targetDir}. See documentation for helper function \code{getFiles} 
   for options available through \code{...}.} 
-  \item{\code{$getMissingFiles(sourceDir, targetDir, extension = TRUE)}}{ 
+  \item{\code{$getMissingFiles(sourceDir, targetDir, ignore.extensions = TRUE)}}{ 
   Identify files that are present in \code{sourceDir}, but not in
-  \code{targetDir}. If \code{extension} is \code{TRUE}, file extensions are
-  removed before checking lists.} \item{\code{$rsync()}}{Prepare rsync
+  \code{targetDir}. If \code{ignore.extensions} is \code{TRUE}, file extensions are
+  removed before comparing filenames.} \item{\code{$rsync()}}{Prepare rsync
   command that can be used to synchronize pipe directory with a remote
   storage.} \item{\code{mergeXMLFiles(sourceDir, targetDir, regex,
   rootElement, rootAttrs, mc=FALSE, verbose=TRUE, ...)}}{Merge files into
