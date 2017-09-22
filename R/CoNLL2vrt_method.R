@@ -1,11 +1,6 @@
-#' @include pipe_class.R
-NULL
 
 #' @importFrom readr read_lines write_lines locale
 #' @import stringi
-setGeneric("CoNLL2vrt", function(.Object, ...) standardGeneric("CoNLL2vrt"))
-
-
 .CoNLL2vrt <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
   startTime <- Sys.time()
   lines <- readr::read_lines(file = file.path(sourceDir, filename), locale = locale(encoding = "UTF-8"))
@@ -36,11 +31,11 @@ setGeneric("CoNLL2vrt", function(.Object, ...) standardGeneric("CoNLL2vrt"))
 
 
 
-setMethod("CoNLL2vrt", "pipe", function(.Object, sourceDir, targetDir, pattern = "conll", progress = TRUE, mc = FALSE, verbose = FALSE){
-  dirApply(
-    f = .CoNLL2vrt,
-    sourceDir = file.path(.Object@projectDir, sourceDir),
-    targetDir = file.path(.Object@projectDir, targetDir),
-    progress = progress, mc = mc, verbose = verbose, pattern = pattern
-  )
-})
+# setMethod("CoNLL2vrt", "pipe", function(.Object, sourceDir, targetDir, pattern = "conll", progress = TRUE, mc = FALSE, verbose = FALSE){
+#   dirApply(
+#     f = .CoNLL2vrt,
+#     sourceDir = file.path(.Object@projectDir, sourceDir),
+#     targetDir = file.path(.Object@projectDir, targetDir),
+#     progress = progress, mc = mc, verbose = verbose, pattern = pattern
+#   )
+# })

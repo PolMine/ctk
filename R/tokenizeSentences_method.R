@@ -1,7 +1,10 @@
-#' @include pipe_class.R
-NULL
-
-
+#' Tokenize sentences.
+#' 
+#' @param targetElement where to finde the text nodes
+#' @param para logical, whether to annotate paragraphs
+#' @return the output of the procedure
+#' @exportMethod tokenizeSentences
+#' @author Andreas Blaette
 setGeneric("tokenizeSentences", function(.Object, ...) standardGeneric("tokenizeSentences"))
 
 setMethod("tokenizeSentences", "character", function(
@@ -19,24 +22,3 @@ setMethod("tokenizeSentences", "character", function(
     )
   retval
 })
-
-#' @param targetElement where to finde the text nodes
-#' @param para logical, whether to annotate paragraphs
-#' @return the output of the procedure
-#' @exportMethod tokenizeSentences
-#' @author Andreas Blaette
-#' @rdname pipe
-setMethod("tokenizeSentences", "pipe", function(
-  .Object, sourceDir="xml",targetDir="xmlAnno",
-  targetElement="p", para=FALSE,
-  mc=FALSE, verbose=FALSE, progress=TRUE
-){
-  checkDirs(.Object, sourceDir, targetDir)
-  tokenizeSentences(
-    .Object=file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
-    targetElement=targetElement, para=para, mc=mc, verbose=verbose, progress=progress
-    )
-  return(.Object)
-})
-
-

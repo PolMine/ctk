@@ -1,7 +1,7 @@
 setGeneric("inspect", function(.Object, ...) standardGeneric("inspect"))
 
 setMethod("inspect", "character", function(.Object, element, attributes, mc=FALSE, verbose=FALSE){
-  files <- list.files(.Object, pattern="xml", full.names=TRUE)
+  files <- list.files(.Object, pattern = "xml", full.names = TRUE)
   xpathAttr <- sapply(names(attributes), function(x) paste('@', x, '="', attributes[x], '"', sep="") )
   xpath <- paste('//', element, '[', paste(xpathAttr, collapse=' and ', sep=''), ']', sep='')
   .inspect <- function(file, xpath){
@@ -20,8 +20,4 @@ setMethod("inspect", "character", function(.Object, element, attributes, mc=FALS
   }
   for (i in rev(which(lapply(results, length) == 0))) results[[i]] <- NULL
   results
-})
-
-setMethod("inspect", "pipe", function(.Object, sourceDir, element, attributes, mc=FALSE, verbose=FALSE){
-  inspect(file.path(.Object@projectDir, sourceDir), element=element, attributes=attributes, mc=mc, verbose=verbose)
 })

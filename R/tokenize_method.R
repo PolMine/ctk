@@ -172,17 +172,6 @@ setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
   retval
 }
 
-#' @rdname tokenize-method
-setMethod("tokenize", "pipe", function(
-  .Object, sourceDir, targetDir, with="stanfordNLP", lang="de", ...
-  ){
-  checkDirs(.Object=.Object, sourceDir, targetDir)
-  dirApply(
-    f=.tokenizeWorker, sourceDir=file.path(.Object@projectDir, sourceDir),
-    targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(with=with, lang=lang), ...       
-    )
-})
  
 setMethod("tokenize", "character", function(.Object, lang="de", with="stanfordNLP", ...){
   .tokenizeWorker(
@@ -191,20 +180,3 @@ setMethod("tokenize", "character", function(.Object, lang="de", with="stanfordNL
     )
 })
 
-
-# library(XML)
-# library(openNLP)
-# library(NLP)
-# sourceDir <- "/home/blaette/git/keywords/data/repubblica/xml"
-# targetDir <- "/home/blaette/git/keywords/data/repubblica/tok"
-# # sourceDir <- "/home/blaette/Lab/repos/keywords/data/repubblica/xml"
-# # targetDir <- "/home/blaette/Lab/repos/keywords/data/repubblica/tok"
-# lang <- "it"
-# sentTokenAnnotator <- openNLP::Maxent_Sent_Token_Annotator(language=lang)
-# wordTokenAnnotator <- openNLP::Maxent_Word_Token_Annotator(language=lang)
-# filenames <- list.files(sourceDir)
-# for (j in c(1:100)){
-#   print(filenames[j])
-#   .openNLPtokenizer(filename=filenames[j], sourceDir=sourceDir, targetDir=targetDir, lang=lang)  
-# }
-# 

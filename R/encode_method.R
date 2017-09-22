@@ -1,7 +1,3 @@
-#' @include pipe_class.R
-NULL
-
-
 #' @rdname encode-method
 setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 
@@ -77,24 +73,6 @@ setMethod("encode", "character", function(.Object, corpus = "FOO", registry = Sy
 })
 
 
-#' @param corpus CWB corpus name that shall be created
-#' @param xml logical
-#' @exportMethod encode
-#' @rdname encode-method
-setMethod("encode", "pipe", function(.Object, sourceDir, corpus, encoding, xml = TRUE, verbose = TRUE, embedding = "0", exec = TRUE, ...){
-  if (length(.Object@sAttributes) == 0) {
-    if (verbose == TRUE) message("... getting sAttributes")
-    .Object <- sAttributeList(.Object, sourceDir=sourceDir, ...) 
-  }
-  encode(
-    .Object = file.path(.Object@projectDir, sourceDir),
-    corpus = corpus, encoding = encoding, registry = .Object@registry,
-    sAttributes = .Object@sAttributes, xml = xml,
-    embedding = embedding, exec = exec,
-    ...
-    )
-  return(.Object)
-})
 
 
 #' @rdname encode-method

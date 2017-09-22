@@ -1,6 +1,3 @@
-#' @include pipe_class.R
-NULL
-
 #' perform XSL transformation
 #' 
 #' @param .Object a directory
@@ -9,6 +6,10 @@ NULL
 #' @param mc logical, whether to use multicore
 #' @param verbose whether to be verbose, defaults to TRUE
 #' @rdname xslt-method
+#' @exportMethod xslt
+#' @param xslFile file for the xsl transformation
+#' @param mkdir logical, whether to create the outDir, if it does not yet exist
+#' @return return of the saxon parser
 #' @exportMethod xslt
 setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
 
@@ -55,23 +56,6 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
 }
 
 
-
-#' @param xslFile file for the xsl transformation
-#' @param mkdir logical, whether to create the outDir, if it does not yet exist
-#' @return return of the saxon parser
-#' @exportMethod xslt
-#' @rdname pipe
-setMethod("xslt", "pipe", function(
-  .Object, sourceDir, targetDir, xslFile, ...
-){
-  dirApply(
-    f = .xsltWorker,
-    sourceDir = file.path(.Object@projectDir, sourceDir),
-    targetDir = file.path(.Object@projectDir, targetDir),
-    param = list(xslFile=xslFile), 
-    ...
-  )       
-})
 
 setMethod("xslt", "character", function(.Object, xslFile){
   .xsltWorker(filename = .Object, param = list(xslFile = xslFile))

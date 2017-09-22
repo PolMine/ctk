@@ -16,6 +16,13 @@ xslt(.Object, ...)
 \item{mc}{logical, whether to use multicore}
 
 \item{verbose}{whether to be verbose, defaults to TRUE}
+
+\item{xslFile}{file for the xsl transformation}
+
+\item{mkdir}{logical, whether to create the outDir, if it does not yet exist}
+}
+\value{
+return of the saxon parser
 }
 \description{
 perform XSL transformation

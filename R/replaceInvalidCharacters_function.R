@@ -14,8 +14,8 @@ setGeneric("replaceInvalidCharacters", function(.Object, ...) standardGeneric("r
     c("\u009e", " "), c("\u0098", " "), c("\u008c", " "), c("\u0095", " "), c("\u0091", " "), c("\u0085", " "),
     c("\a", " "), c("\b", " "),  c("\f", " "), c("\t", " "), c("\v", " ")
   )
-  for (i in c(1:length(charactersToReplace))) txt <- gsub(charactersToReplace[[i]][1], charactersToReplace[[i]][2], txt)
-  return(txt)
+  for (i in 1:length(charactersToReplace)) txt <- gsub(charactersToReplace[[i]][1], charactersToReplace[[i]][2], txt)
+  txt
 }
 
 
@@ -48,16 +48,3 @@ setGeneric("replaceInvalidCharacters", function(.Object, ...) standardGeneric("r
 #' @export replaceInvalidCharacters
 #' @rdname replaceInvalidCharacters
 #' @name replaceInvalidCharacters
-setMethod("replaceInvalidCharacters", "pipe", function(.Object, sourceDir, targetDir, xml=FALSE, ...){
-  if (xml == FALSE) {
-    stopifnot(!is.null(sourceDir))
-    dirApply(
-      f=.replaceInTxtFile,
-      sourceDir=file.path(.Object@projectDir, sourceDir),
-      targetDir=file.path(.Object@projectDir, targetDir),
-      param=list(), ...
-      )
-  } else if (xml == TRUE){
-    stop("replacing invalid characters in XML files not yet implemented")
-  }
-})

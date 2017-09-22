@@ -1,4 +1,4 @@
-#' apply iconv to files in a directory
+#' Apply iconv to files in a directory.
 #' 
 #' @param .Object a character string providing a directory
 #' @param targetDir where to put files
@@ -13,12 +13,9 @@
 setGeneric("recode", function(.Object, ... ) standardGeneric("recode"))
 
 
-#' @include pipe_class.R
-NULL
-
 
 .getEncoding <- function(filename, sourceDir){
-  fileRetval <- system(paste("file", "--mime", file.path(sourceDir, filename), collapse=" "), intern=TRUE)
+  fileRetval <- system(paste("file", "--mime", file.path(sourceDir, filename), collapse = " "), intern = TRUE)
   stringiEncoding <- NA
   guessedEncoding <- NA
   suggestedEncoding <- NA
@@ -104,18 +101,3 @@ setMethod("recode", "character", function(.Object, targetDir=NULL, from=NULL, to
     ...
   )
 })
-
-#' @rdname recode-method
-setMethod("recode", "pipe", function(.Object, sourceDir, targetDir, from="UTF-8", to="ISO-8859-1", xml=FALSE, log=FALSE, ...){
-  checkDirs(.Object, sourceDir, targetDir)
-  dirApply(
-    f=.iconvWorker,
-    sourceDir=file.path(.Object@projectDir, sourceDir),
-    targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(from=from, to=to, xml=xml, log=log),
-    ...
-  )
-})
-
-
-

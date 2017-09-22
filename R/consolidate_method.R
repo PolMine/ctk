@@ -1,18 +1,9 @@
-#' @include pipe_class.R
-NULL
-
-# @include pipe_class.R
-NULL
-
-#' @exportMethod consolidate
-setGeneric("consolidate", function(.Object, ...) standardGeneric("consolidate"))
-
 .consolidate <- function(filename, sourceDir, targetDir, verbose, param){
   startTime <- Sys.time()
   consolidation <- param[["consolidation"]]
   doc <- xmlTreeParse(file.path(sourceDir, filename), useInternalNodes=TRUE)
   nodes <- getNodeSet(doc, paste("//", param[["element"]]))
-  for (i in c(1:length(nodes))){
+  for (i in 1:length(nodes)){
     attrValuesOld <- xmlAttrs(nodes[[i]])
     if (attrValuesOld[param[["attribute"]]] %in% names(consolidation)){
       attrValuesOld[param[["attribute"]]] <- consolidation[[ attrValuesOld[param[["attribute"]]] ]]
@@ -27,19 +18,3 @@ setGeneric("consolidate", function(.Object, ...) standardGeneric("consolidate"))
     return(as.character(Sys.time() - startTime))
   }
 }
-
-
-setMethod("consolidate", "pipe", function(
-  .Object, sourceDir, targetDir,
-  element, attribute, consolidation,
-  ...
-){
-  checkDirs(.Object, sourceDir, targetDir)
-  dirApply(
-    f=.consolidate,
-    sourceDir=file.path(.Object@projectDir, sourceDir),
-    targetDir=file.path(.Object@projectDir, targetDir),
-    param=list(consolidation=consolidation, element=element, attribute=attribute),
-    ...
-  )
-})

@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Toolkit for Preparing Corpora
-Version: 0.2.20
-Date: 2017-09-05
+Version: 0.2.21
+Date: 2017-09-19
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: R Wrapper for sentence segmentation, tagging, and CWB import
@@ -16,7 +16,11 @@ Imports:
     slam,
     stringi,
     data.table,
-    xml2
+    xml2,
+    R6,
+    jsonlite,
+    polmineR,
+    tools
 Suggests:
     polmineR,
     NLP,
@@ -24,22 +28,19 @@ Suggests:
 LazyData: yes
 License: CC BY-NC-SA 4.0 | file LICENSE
 Collate: 
-    'pipe_class.R'
     'CoNLL2vrt_method.R'
     'CoreNLP_class.R'
+    'Encoder_class.R'
     'NDJSON_class.R'
-    'PipeDir_class.R'
+    'Pipe_class.R'
+    'PipeCoreNLP.R'
     'PrettyPrintProcessor.R'
     'annotate_method.R'
-    'anyToXml_method.R'
     'as.package_function.R'
     'as.xml_method.R'
-    'bundleXMLFiles_method.R'
     'characterCount_method.R'
-    'checkDirs_method.R'
     'consolidate_method.R'
     'ctk_package.R'
-    'describeDir_method.R'
     'dirApply_function.R'
     'duplicates_method.R'
     'encode_method.R'
@@ -47,31 +48,19 @@ Collate:
     'fix_method.R'
     'getAttributeValues_method.R'
     'getFiles_method.R'
-    'getNestedElements_method.R'
     'getNgrams_method.R'
-    'init_method.R'
     'inspect_method.R'
-    'mergeFiles_method.R'
-    'missingFiles_method.R'
     'monthsToNumeric.R'
-    'ner_method.R'
-    'pipe_class_methods.R'
     'recode_method.R'
     'regexContext_function.R'
     'regex_method.R'
     'replaceInvalidCharacters_function.R'
-    'rsync_method.R'
     'sAttributeList_method.R'
-    'setPaths_method.R'
-    'setupPipeDir_method.R'
-    'subset_method.R'
-    'tag_method.R'
     'tokenizeSentences_method.R'
     'tokenize_method.R'
     'treetagger_method.R'
     'utils.R'
     'validate_method.R'
-    'vrtCheck_method.R'
     'xmlToDT_function.R'
     'xslt_method.R'
     'zzz.R'

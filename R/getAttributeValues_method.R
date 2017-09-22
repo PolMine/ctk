@@ -1,7 +1,3 @@
-#' @include pipe_class.R
-NULL
-
-
 #' @exportMethod getAttributeValues 
 setGeneric("getAttributeValues", function(.Object, ...) standardGeneric("getAttributeValues"))
 
@@ -61,11 +57,4 @@ setMethod("getAttributeValues", "character", function(
     }
   }
   retval
-})
-
-setMethod("getAttributeValues", "pipe", function(.Object, sourceDir, pattern, element, attrs, unique = TRUE, mc = FALSE, progress = TRUE){
-  getAttributeValues(
-    .Object = file.path(.Object@projectDir, sourceDir), pattern = pattern,
-    element = element, attrs = attrs, unique = unique, mc = mc, progress = progress
-  )
 })

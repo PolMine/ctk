@@ -4,17 +4,12 @@
 \name{validate}
 \alias{validate}
 \alias{validate,character-method}
-\alias{validate,pipe-method}
 \title{validate XML files}
 \usage{
 validate(.Object, ...)
 
 \S4method{validate}{character}(.Object, dtd = NULL, targetDir = NULL,
   verbose = FALSE, mc = FALSE, progress = TRUE)
-
-\S4method{validate}{pipe}(.Object, sourceDir, targetDir = NULL, dtd = NULL,
-  verbose = FALSE, mc = FALSE, progress = TRUE, files = NULL,
-  pattern = "xml")
 }
 \arguments{
 \item{.Object}{either a character vector indicating a directore, or a pipe object}

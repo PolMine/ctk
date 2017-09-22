@@ -1,4 +1,4 @@
-#' apply a function to files in a directory
+#' Apply a function over files in directory.
 #' 
 #' The function (f) will be applied to the files in a directory (in a lapply/sapply/vapply-style).
 #' 
@@ -35,67 +35,72 @@
 #' @rdname dirApply
 #' @name dirApply
 #' @import parallel
+#' @importFrom tools file_path_sans_ext
 #' @importFrom pbapply pblapply
+#' @importFrom parallel detectCores
 dirApply <- function(
   f, sourceDir, targetDir = NULL,
   pattern = NULL, mc = FALSE, progress = TRUE, verbose = FALSE,
   sample = FALSE, filenames = NULL, continue = FALSE, failsafe = FALSE,
-  param=list()
+  param = list()
   ){
+  
   if (is.null(filenames)) filenames <- list.files(sourceDir, pattern)
   if (length(filenames) == 0) stop("no files in sourceDir")
-  if (continue == TRUE){
-    if ( verbose == TRUE ) message ("... getting files not yet present in targetDir")
+  
+  if (continue){
+    if (verbose) message ("... getting files not yet present in targetDir")
     filesTargetDir <- list.files(targetDir)
-    filesTargetDirChomp <- gsub("^(.*)\\..*$", "\\1", filesTargetDir)
-    filesSourceDirChomp <- gsub("^(.*)\\..*$", "\\1", filenames)
-    filesToGo <- filenames[!filesSourceDirChomp %in% filesTargetDirChomp]
-    if (verbose == TRUE){
+    filesToGo <- filenames[!file_path_sans_ext(filenames) %in% file_path_sans_ext(filesTargetDir)]
+    if (verbose){
       message("files in sourceDir -> ", length(filenames))
       message("files in targetDir -> ", length(filesTargetDir))
       message("skipping files -> ", length(filenames) - length(filesToGo))
     }
     filenames <- filesToGo
   }
-  if (sample != FALSE) filenames <- sample(filenames, size=sample)
+  
+  if (sample != FALSE) filenames <- sample(filenames, size = sample)
   
   if (mc == FALSE) {
-    if (progress == TRUE) verbose <- FALSE
+    
+    if (progress) verbose <- FALSE
     startTime <- Sys.time()
-    retval <- lapply(c(1:length(filenames)), function(i){
-      if (verbose == TRUE) message("... processing ", filenames[i])
-      if (progress == TRUE) .progressBar(i, length(filenames), showShare=TRUE, startTime=startTime)
-      if (failsafe == FALSE) {
-        toReturn <- f(filename=filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param))  
-      } else {
-        toReturn <- try(f(filename=filenames[i], sourceDir=sourceDir, targetDir=targetDir, verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param)))
+    retval <- lapply(
+      setNames(1:length(filenames), filenames),
+      function(i){
+        if (verbose) message("... processing ", filenames[i])
+        if (progress) .progressBar(i, length(filenames), showShare = TRUE, startTime = startTime)
+        f <- f(
+          filename = filenames[i], sourceDir = sourceDir, targetDir = targetDir,
+          verbose = verbose, param = c(fileNo = i, filesTotal = length(filenames), param)
+        )
+        if (failsafe) f else try(f)
       }
-      toReturn
-    })
-    # for (i in rev(which(sapply(retval, is.null) == TRUE))) retval[i] <- NULL
+    )
     if (unique(lapply(retval, function(x) class(x)[1])) == "difftime") class(retval) <- "timePerFile"
-    names(retval) <- filenames
     return(retval)
+    
   } else if (mc == TRUE || is.numeric(mc)){
     if (is.numeric(mc) == TRUE){
       noCores <- mc
-      if (verbose == TRUE) message("... using ", noCores, " cores")
+      if (verbose) message("... using ", noCores, " cores")
     } else {
-      noCores <- 3  
-      if (verbose == TRUE) message("... number of cores not provided explicitly, using ", noCores, " cores")
+      noCores <- detectCores() - 1
+      if (verbose) message("... number of cores not provided explicitly, using ", noCores, " cores")
     }
     if (progress == FALSE){
       retval <- mclapply(
-        c(1:length(filenames)),
+        1:length(filenames),
         function(i) f(
-          filenames[i], sourceDir=sourceDir, targetDir=targetDir,
-          verbose=verbose, param=c(fileNo=i, filesTotal=length(filenames), param)
+          filenames[i], sourceDir = sourceDir, targetDir = targetDir,
+          verbose = verbose, param = c(fileNo=i, filesTotal = length(filenames), param)
           ),
         mc.cores=noCores
         )  
     } else if (progress == TRUE){
       retval <- pblapply(
-        c(1:length(filenames)),
+        1:length(filenames),
         function(i) f(
           filenames[i], sourceDir = sourceDir, targetDir = targetDir,
           verbose = verbose, param = c(fileNo=i, filesTotal = length(filenames), param)

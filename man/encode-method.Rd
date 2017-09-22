@@ -4,7 +4,6 @@
 \name{encode}
 \alias{encode}
 \alias{encode,character-method}
-\alias{encode,pipe-method}
 \alias{encode,regions-method}
 \title{Encode corpus (CWB import).}
 \usage{
@@ -13,9 +12,6 @@ encode(.Object, ...)
 \S4method{encode}{character}(.Object, corpus = "FOO",
   registry = Sys.getenv("CORPUS_REGISTRY"), sAttributes, embedding = "0",
   encoding = "utf8", xml = TRUE, exec = TRUE, verbose = TRUE, ...)
-
-\S4method{encode}{pipe}(.Object, sourceDir, corpus, encoding, xml = TRUE,
-  verbose = TRUE, embedding = "0", exec = TRUE, ...)
 
 \S4method{encode}{regions}(.Object, filename = NULL, verbose = TRUE)
 }
@@ -35,10 +31,6 @@ encode(.Object, ...)
 \item{exec}{logical, whether to execute commands}
 
 \item{verbose}{defaults to TRUE}
-
-\item{corpus}{CWB corpus name that shall be created}
-
-\item{xml}{logical}
 }
 \description{
 This is a wrapper for the \code{cwb-encode} and \code{cwb-make} command line tools. 

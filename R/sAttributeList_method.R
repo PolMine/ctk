@@ -1,6 +1,3 @@
-#' @include pipe_class.R
-NULL
-
 .getSAttributes <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()){
   elementSummary <- xmlElementSummary(file.path(sourceDir, filename))
   toReturn <- lapply(
@@ -25,6 +22,7 @@ setGeneric("sAttributeList", function(.Object, ...) standardGeneric("sAttributeL
 #' @param mc whether to use multicore
 #' @rdname sAttributeList-method
 #' @exportMethod sAttributeList
+#' @import XML
 setMethod("sAttributeList", "character", function(.Object, sample = 100, progress = TRUE, verbose = FALSE, ...){
   docs <- dirApply(
     f = .getSAttributes, sourceDir=.Object, targetDir = NULL, verbose = FALSE, param=list(), sample = sample, progress = progress
@@ -41,13 +39,5 @@ setMethod("sAttributeList", "character", function(.Object, sample = 100, progres
 })
 
 
-#' @import XML
-#' @exportMethod sAttributeList
-#' @rdname pipe
-setMethod("sAttributeList", "pipe", function(.Object, sourceDir, sample = 100, progress = TRUE, verbose = FALSE, ...){
-  sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), sample = sample, progress = progress, verbose = verbose)
-  .Object@sAttributes <- sAttributes
-  return(.Object)
-})
 
 

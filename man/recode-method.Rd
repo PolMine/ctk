@@ -4,16 +4,12 @@
 \name{recode}
 \alias{recode}
 \alias{recode,character-method}
-\alias{recode,pipe-method}
-\title{apply iconv to files in a directory}
+\title{Apply iconv to files in a directory.}
 \usage{
 recode(.Object, ...)
 
 \S4method{recode}{character}(.Object, targetDir = NULL, from = NULL, to,
   xml = FALSE, ...)
-
-\S4method{recode}{pipe}(.Object, sourceDir, targetDir, from = "UTF-8",
-  to = "ISO-8859-1", xml = FALSE, log = FALSE, ...)
 }
 \arguments{
 \item{.Object}{a character string providing a directory}
@@ -32,5 +28,5 @@ recode(.Object, ...)
 something
 }
 \description{
-apply iconv to files in a directory
+Apply iconv to files in a directory.
 }

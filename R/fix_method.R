@@ -120,18 +120,6 @@
 #' @exportMethod fix
 #' @aliases fix-method fix
 #' @rdname fix-method
-#' @rdname pipe
-setMethod("fix", "pipe", function(x, sourceDir, targetDir, encoding = "UTF-8", replacements = list(), ...){
-  checkDirs(x, sourceDir, targetDir)
-  dirApply(
-    f = .repairVrtFile,
-    sourceDir = file.path(x@projectDir, sourceDir),
-    targetDir = file.path(x@projectDir, targetDir),
-    param = list(encoding = encoding, replacements = replacements),
-    ...
-    )
-})
-
 setMethod("fix", "character", function(x){
   .repairVrtFile(x)
 })
