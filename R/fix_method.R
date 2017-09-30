@@ -1,53 +1,36 @@
-.repairVrtFile <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
+.consolidate <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
   if (!is.null(targetDir)) startTime <- Sys.time()
-  if ("encoding" %in% names(param)){
-    fileEncoding <- param[["encoding"]]
-  } else {
-    fileEncoding <- "UTF-8"
-  }
-  if (is.null(sourceDir)){
-    vrt <- strsplit(filename, "\n")[[1]]
-  } else {
-    vrt <- scan(
-      file.path(sourceDir, filename), sep = "\n", what = "character",
-      blank.lines.skip = TRUE, quiet = !verbose,
-      fileEncoding = fileEncoding
-    )    
-  }
-  vrt <- .repairVrtCharacterVector(vrt, replacements = param[["replacements"]], verbose = verbose)
+  fileEncoding <- if ("encoding" %in% names(param)) param[["encoding"]] else "UTF-8"
+  vrt <- if (is.null(sourceDir)) strsplit(filename, "\n")[[1]] else readLines(file.path(sourceDir, filename))
+  vrt <- .repair(vrt, replacements = param[["replacements"]], verbose = verbose)
   if (!is.null(targetDir)){
     if (verbose) message("... writing ", filename)
-    if (length(grep('^<.*?>$', vrt)) != length(vrt)){
-      cat(vrt, file = file.path(targetDir, filename), sep = "\n")  
-    } else {
+    if (all(grepl('^<.*?>$', vrt))){
       warning("... no text in file, skipping: ", filename)
+    } else {
+      cat(vrt, file = file.path(targetDir, filename), sep = "\n")  
     }
-    return(Sys.time() - startTime)
+    return( Sys.time() - startTime )
   } else {
     return(paste(vrt, collapse = "\n"))
   } 
 }
 
-.repairVrtCharacterVector <- function(vrt, replacements, verbose){
+.repair <- function(vrt, replacements, verbose){
   
   # remove leading and trailing spaces
   vrt2 <- gsub("^\\s*(.*?)\\s*$", "\\1", vrt)
+  
   # repair buggy lines
-  
-  vrt3 <- unlist(lapply(
-    vrt2,
-    function(x) {
-      if (grepl("#unknown#\t#unknown#", x)){
-        retval <- c(
-          gsub("^(.*?#unknown#)\t.*$", "\\1", x, perl = TRUE),
-          gsub("^.*\t#unknown#\t(#unknown#.*?)$", "\\1", x, perl = TRUE)
-        )
-      } else {
-        retval <- x
-      }
-      retval
-    }))
-  
+  vrt3 <- ifelse(
+    grepl("#unknown#\t#unknown#", vrt2),
+    c(
+      gsub("^(.*?#unknown#)\t.*$", "\\1", vrt2, perl = TRUE),
+      gsub("^.*\t#unknown#\t(#unknown#.*?)$", "\\1", vrt2, perl = TRUE)
+    ),
+    y
+  )
+
   # misplaced closing tags (at end of line)
   for (i in grep("^.+?</.*?>$", vrt3, perl = T)){
     if (grepl("^.*?\\s.*?\\s.*?</.*?>$", vrt3[i])){
@@ -68,39 +51,33 @@
   # remove empty tags
   selfClosingTags <- grep("^\\s*<.*?/>\\s*$", vrt3)
   misleadingTags <- grep('^[<>]\\s+.*$', vrt3)
-  indexToRemove <- c(selfClosingTags, misleadingTags)
-  vrt4List <- as.list(vrt3)
-  for (i in rev(indexToRemove)) vrt4List[[i]] <- NULL
-  vrt4 <- unlist(vrt4List)
+  indexToRemove <- unique(c(selfClosingTags, misleadingTags))
+  y <- if (length(indexToRemove) > 0) vrt3[-indexToRemove] else vrt3
+
+  # run through replacements
+  knownBugs <- c(
+    c("\u00A0", " "), # incompatible with XML
+    c("<unknown>", "#unknown#"), # incompatible with XML
+    c("&", "&amp;"), # incompatible with XML
+    c("\xC2\xA0", ""), # incompatible with XML
+    c("^\u201E\\t[A-Z]+\\t#unknown#$", "'\t$(\t'"),
+    c("^``\\t.*?\\t``$", "'\t$(\t'"),
+    c('^\\s*<\\s*$', ""),
+    c("^(<.*?>)(<.*?>)$", "\\1\n\\2")
+  )
+  toReplace <- c(knownBugs, replacements)
+  for (i in 1:length(toReplace)) y <- gsub(toReplace[[i]][1], toReplace[[i]][2], y)
+
+  emptyLines <- grep("^\\s*$", y)
+  if (length(emptyLines) > 0) y <- y[-emptyLines]
   
-  # remove characters incompatible with XML
-  vrt5 <- gsub(" ", " ", vrt4)
-  vrt6 <- gsub("<unknown>", "#unknown#", vrt5)
-  vrt7 <- gsub("&", "&amp;", vrt6)
-  vrt7 <- gsub("\xC2\xA0", "", vrt7)
-  
-  # anything else
-  vrt8 <- gsub("^„\\t[A-Z]+\\t#unknown#$", "'\t$(\t'", vrt7) # 
-  vrt9 <- gsub("^``\\t.*?\\t``$", "'\t$(\t'", vrt8)
-  vrt10 <- gsub('^\\s*<\\s*$', "", vrt9)
-  vrt10 <- gsub("^(<.*?>)(<.*?>)$", "\\1\n\\2", vrt10) # two tags that happen to be in the same line
-  
-  # apply user-defined replacements
-  for (i in 1:length(replacements)){
-    vrt10 <- gsub(replacements[[i]][1], replacements[[i]][2], vrt10)
-  }
-  
-  emptyLines <- grep("^\\s*$", vrt10)
-  if (length(emptyLines) > 0) vrt10 <- vrt10[-emptyLines]
-  
-  return(vrt10)
+  return(y)
 }
 
-#' Fix vrt files for CWB import.
+#' Consolidate vrt files for CWB import.
 #' 
 #' Files resulting from tagging/annotation may violate the requirements of the 
-#' Corpus Workbench (CWB). The \code{fix} method repairs the known issues
-#' the vrt files may cause.
+#' Corpus Workbench (CWB).  Consolidate the known issues the vrt files may cause.
 #' 
 #' Known issues resulting from annotating files (with the treetagger in particular)
 #' are whitespace characters invalid for XML, XML elements at the end of a line
@@ -115,11 +92,9 @@
 #' @param targetDir a character vector
 #' @param encoding encoding of the file, used by scan
 #' @param replacements a list of character vectors (length 2 each) with regular expressions / replacements
-#' @param mc whether to use multicore
-#' @param verbose logical, defaults to TRUE
-#' @exportMethod fix
-#' @aliases fix-method fix
-#' @rdname fix-method
-setMethod("fix", "character", function(x){
-  .repairVrtFile(x)
-})
+#' @param ... further parameters passed into \code{dirApply}
+#' @export consolidate
+#' @rdname consolidate
+consolidate <- function(x, sourceDir, targetDir, encoding, replacements, ...){
+  .consolidate(filename = x, sourceDir, targetDir, param = list(encoding = encoding, replacements = replacements))
+}

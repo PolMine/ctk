@@ -12,6 +12,9 @@ xmlToDT(filename, body = "//body", meta = NULL, mc = NULL)
 \item{body}{an xpath expression defining the body of the xml document}
 
 \item{meta}{a named character vector with xpath expressions}
+
+\item{mc}{a numeric/integer value, will be passed to param \code{mc.cores}
+in a call to \code{mclapply} - number of cores to use}
 }
 \description{
 The procedure is inspired by the tidytext paradigm, but

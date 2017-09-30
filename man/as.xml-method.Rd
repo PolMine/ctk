@@ -17,6 +17,8 @@ as.xml(.Object, ...)
 \arguments{
 \item{.Object}{object to convert (data.frame)}
 
+\item{...}{further parameters}
+
 \item{meta}{character string, the column names of the metadata}
 
 \item{body}{character string, the column names of the text body, the column names will be turned into the value of a type attribute}
@@ -30,6 +32,8 @@ as.xml(.Object, ...)
 \item{clean}{logical, if TRUE, whitespace will be removed from all columns}
 
 \item{verbose}{logical}
+
+\item{filename}{a filename}
 }
 \description{
 convert data.frame to XML

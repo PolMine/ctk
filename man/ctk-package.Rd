@@ -5,9 +5,9 @@
 \alias{ctk}
 \alias{ctk-package}
 \alias{ctk-package}
-\title{ctk-package}
+\title{R-Package 'ctk' (Corpus Toolkit).}
 \description{
-Tools for importing XML into the CWB.
+Tools for corpus preparation.
 }
 \details{
 The ctk-package relies on some external tools, such as the TreeTagger. The package gets

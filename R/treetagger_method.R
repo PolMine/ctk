@@ -12,6 +12,7 @@
 #' processing.
 #' 
 #' @param filename file to process, or a character vector (if sourceDir is NULL)
+#' @param sourceDir directory with files to be processed
 #' @param targetDir output directory, if NULL, the processed input will be returned
 #' @param param a list that needs to include the language to be used (defaults to 'de') and a logical
 #' vector \code{tokenize} whether the input needs to be tokenized before tagging

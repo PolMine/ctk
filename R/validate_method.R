@@ -1,39 +1,45 @@
-.validateWorker <- function(filename, sourceDir, verbose, dtd=NULL, targetDir=NULL){
-  cmd <- c("xmllint")
+.validate <- function(filename, sourceDir, targetDir = NULL, param = list(), verbose = FALSE){
+  cmd <- "xmllint"
+  if (!is.null(param[["dtd"]])) cmd <- c(cmd, "--loaddtd", param[["dtd"]])
   if (is.null(targetDir)) cmd <- c(cmd, "--noout")
-  if (!is.null(dtd)) cmd <- c(cmd, "--loaddtd", dtd)
-  if (!is.null(targetDir)) cmd <- c(cmd, "--recover")
   cmd <- c(cmd, file.path(sourceDir, filename))
-  if (!is.null(targetDir)) cmd <- c(cmd, ">", file.path(targetDir, filename))
-  cmd <- paste(cmd, collapse=" ")
-  if (verbose == TRUE) print(cmd)
-  msg <- system(cmd, ignore.stderr=TRUE, intern=TRUE)
-  if (verbose == TRUE) print(msg)
-  return(msg)
+  if (!is.null(targetDir)) cmd <- c(cmd, "--recover", ">", file.path(targetDir, filename))
+  cmd <- paste(cmd, collapse = " ")
+  if (verbose) cat(cmd)
+  msg <- system(cmd, ignore.stderr = FALSE, intern = FALSE)
+  if (verbose) cat(msg)
+  if (msg == 0) TRUE else FALSE
 }
 
-#' validate XML files
-#' 
-#' a story to be told
-#' 
-#' @param .Object either a character vector indicating a directore, or a pipe object
-#' @param sourceDir the source directory
-#' @param dtd check agains a dtd
-#' @param ... further arguments
-#' @exportMethod validate
+
 #' @name validate
+#' @title Validate XML files.
+#' @description A single file, or all files in directory x are checked for
+#'   validity using the command line tool \code{xmllint}. If \code{targetDir} is
+#'   specified, the option '--recover' will be used, and repaired XML files are
+#'   written to targetDir. If the param \code{dtd} provides a filename with a
+#'   DTD, files are checked against the respective DTD.
+#' @param x character vector, a filename, or a directory path
+#' @param targetDir the target directory
+#' @param dtd filename of a DTD
+#' @param ... arguments that will be passed into dirApply
+#' @export validate
 #' @rdname validate
 #' @examples
 #' \dontrun{
 #'   validate("/Users/blaette/Lab/repos/plprnwhtm/html/2015-02-23/utf8", dtd=NULL)
 #'   for i in $(ls); do xmllint --recover $i -o ../xmlValidated/$i; done
 #' }
-setGeneric("validate", function(.Object, ...){standardGeneric("validate")})
-
 #' @rdname validate
-setMethod("validate", "character", function(.Object, dtd=NULL, targetDir=NULL, verbose=FALSE, mc=FALSE, progress=TRUE){
-  .iterateFunctionFiles(
-    sourceDir=.Object, f=.validateWorker, pattern="xml", mc=mc,
-    verbose=verbose, progress=progress, targetDir=targetDir, dtd=dtd
-  )
-})
+#' @aliases validate
+validate <- function(x, targetDir = NULL, dtd = NULL, ...){
+  if (file.info(x)[["isdir"]] == FALSE){
+    y <- .validate(
+      filename = basename(x), sourceDir = dirname(x), targetDir = targetDir,
+      param = list(dtd = dtd)
+      )
+  } else {
+    y <- dirApply(f = .validate, sourceDir = x, targetDir = targetDir, param = list(dtd = dtd), ...)
+  }
+  y
+}

@@ -28,9 +28,9 @@ unpack(pkg, verbose = TRUE)
 
 \item{description}{short description of the data package}
 
-\item{verbose}{whether to be verbose}
+\item{license}{the license}
 
-\item{licence}{the license}
+\item{verbose}{whether to be verbose}
 }
 \description{
 create R data package with corpus

@@ -6,11 +6,10 @@
 #' @param filenames defaults to NULL, then all files will be examined, of provided, only specific files
 #' @param regex a regex
 #' @param ncharContext characters to the left and to the right
-#' @param verbose logical
-#' @param progress logical
-#' @param mc logical or numeric
+#' @param ... futher parameters that are passed into \code{dirApply}
 #' @importFrom stringi stri_locate_all_regex
 #' @exportMethod regexContext
+#' @rdname regexContext
 setGeneric("regexContext", function(.Object, ...) standardGeneric("regexContext"))
 
 .regexContext <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list(asText=FALSE)){
@@ -50,8 +49,8 @@ setGeneric("regexContext", function(.Object, ...) standardGeneric("regexContext"
   data.frame(regexMatchMatrix, stringsAsFactors=FALSE)  
 }
 
-
-setMethod("regexContext", "character", function(.Object, regex, ncharContext, ...){
+#' @rdname regexContext
+setMethod("regexContext", "character", function(.Object, regex, ncharContext, filenames = NULL, ...){
   sourceDir <- .Object
   if (is.null(filenames)) stopifnot(file.info(sourceDir)[1,"isdir"] == TRUE)
   regexResult <- dirApply(
@@ -60,7 +59,7 @@ setMethod("regexContext", "character", function(.Object, regex, ncharContext, ..
     ...
     )
   regexResultWithFilename <- lapply(
-    c(1:length(regexResult)),
+    1:length(regexResult),
     function(i) data.frame(filename=names(regexResult)[i], regexResult[[i]])
     )
   data.frame(do.call(rbind, regexResultWithFilename), stringsAsFactors=FALSE)

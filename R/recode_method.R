@@ -4,8 +4,8 @@
 #' @param targetDir where to put files
 #' @param from encoding of the files in the the sourceDir, if NULL, the command line file utility will be used to detect the encoding of the source file
 #' @param to final encoding
-#' @param mc use multicore
-#' @param progress whether to display progress bar
+#' @param xml logical, whether files are XML files
+#' @param ... further parameters that are passed into \code{dirApply}
 #' @return something
 #' @rdname recode-method
 #' @exportMethod recode
@@ -92,12 +92,12 @@ setGeneric("recode", function(.Object, ... ) standardGeneric("recode"))
 }
 
 #' @rdname recode-method
-setMethod("recode", "character", function(.Object, targetDir=NULL, from=NULL, to, xml=FALSE, ...){  
-  availableEncodings <- gsub("//", "", system("iconv -l", intern=TRUE))
+setMethod("recode", "character", function(.Object, targetDir = NULL, from = NULL, to, xml = FALSE, ...){  
+  availableEncodings <- gsub("//", "", system("iconv -l", intern = TRUE))
   dirApply(
-    f=.iconvWorker,
-    sourceDir=.Object, targetDir=targetDir,
-    param=list(from=from, to=to, xml=xml),
+    f = .iconvWorker,
+    sourceDir = .Object, targetDir = targetDir,
+    param = list(from = from, to = to, xml = xml),
     ...
   )
 })

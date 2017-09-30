@@ -1,19 +1,17 @@
-#' perform XSL transformation
-#' 
-#' @param .Object a directory
+#' @name xslt
+#' @title Perform XSL transformation.
+#' @description Worker function to be iterated over all files using \code{dirApply}.
+#' @param filename a XML file to be processed
+#' @param sourceDir directory where the XML file resides
 #' @param targetDir output directory
-#' @param xslFile filename
-#' @param mc logical, whether to use multicore
-#' @param verbose whether to be verbose, defaults to TRUE
-#' @rdname xslt-method
-#' @exportMethod xslt
-#' @param xslFile file for the xsl transformation
-#' @param mkdir logical, whether to create the outDir, if it does not yet exist
+#' @param verbose logical value, whether to be verbose
+#' @param param named list of further parameters, it needs to include xslFile,
+#'   the filename of the XSL file
+#' @rdname xslt
+#' @export xslt
 #' @return return of the saxon parser
-#' @exportMethod xslt
-setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
-
-.xsltWorker <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
+xslt <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list(xslFile = character())){
+  if (length(param[["xslFile"]]) == 0) stop("xslFile needs to be defined")
   if (is.null(targetDir)){
     targetDir <- tempdir()
     returnString <- TRUE
@@ -54,9 +52,3 @@ setGeneric("xslt", function(.Object, ...) standardGeneric("xslt"))
     return(Sys.time() - startTime)
   }
 }
-
-
-
-setMethod("xslt", "character", function(.Object, xslFile){
-  .xsltWorker(filename = .Object, param = list(xslFile = xslFile))
-})

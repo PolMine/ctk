@@ -8,20 +8,6 @@
 \usage{
 PipeCoreNLP
 }
-\arguments{
-\item{metadata}{a named list with xpath expressions that is passed into the
-xmlToDT function to extract metadata from XML documents}
-
-\item{sourceDir}{a subdirectory of the pipeDir where files to be processed 
-are located}
-
-\item{targetDir}{a subdirectory of the pipeDir where processed output is
-stored}
-
-\item{cols}{columns that will serve as input to generate p- and s-attributes}
-
-\item{corpus}{name of the CWB corpus to create}
-}
 \description{
 Pipe using Stanford CoreNLP.
 }
@@ -33,7 +19,19 @@ subdirectories of this directory}
 
 \item{\code{time}}{a data.frame with information that different processing stages have consumed}
 
-\item{\code{threads}}{an integer, the number of cores to use}
+\item{\code{threads}}{an integer, the number of cores to use
+
+#' @section Arguments:
+\describe{
+  \item{metadata}{a named list with xpath expressions that is passed into the
+  xmlToDT function to extract metadata from XML documents}
+  \item{sourceDir}{a subdirectory of the pipeDir where files to be processed 
+  are located}
+  \item{targetDir}{a subdirectory of the pipeDir where processed output is
+  stored}
+  \item{cols}{columns that will serve as input to generate p- and s-attributes}
+  \item{corpus}{name of the CWB corpus to create}
+}}
 }}
 
 \section{Methods}{

@@ -14,9 +14,12 @@ setGeneric("encode", function(.Object, ...) standardGeneric("encode"))
 #' @param exec logical, whether to execute commands
 #' @param embedding levels of embedding elements to allow for 
 #' @param verbose defaults to TRUE
+#' @param encoding encoding, passed into \code{cwb-encode}
+#' @param ... further parameters (not passed)
 #' @rdname encode-method
 #' @exportMethod encode
 #' @importClassesFrom polmineR regions
+#' @importFrom polmineR size getTokenStream
 setMethod("encode", "character", function(.Object, corpus = "FOO", registry = Sys.getenv("CORPUS_REGISTRY"), sAttributes, embedding = "0", encoding = "utf8", xml = TRUE, exec = TRUE, verbose = TRUE, ...){
   tmp <- unlist(strsplit(registry, "/"))
   cwbDirs <- list.dirs(paste("/", paste(tmp[2:(length(tmp)-1)], collapse="/"), sep=""), recursive=FALSE)
@@ -75,12 +78,14 @@ setMethod("encode", "character", function(.Object, corpus = "FOO", registry = Sy
 
 
 
+#' @param filename a filename
 #' @rdname encode-method
-#' @importFrom data.table data.table setorder setnames
+#' @importFrom data.table data.table setorder setnames := setkeyv
 setMethod("encode", "regions", function(.Object, filename = NULL, verbose = TRUE){
-  cposDT <- .Object@cpos[!is.na(cpos_right)]
-  cposDT[, "index" := c(1:nrow(cposDT)), with = FALSE]
+  cposDT <- .Object@cpos[!is.na(.Object@cpos[["cpos_right"]])]
+  cposDT[, "index" := 1:nrow(cposDT), with = FALSE]
   setkeyv(cposDT, cols = c("cpos_right", "cpos_left"))
+  .SD <- data.table() # not used, a dummy to pass tests
   .unfold <- function(.SD){
     left <- as.integer(.SD[1, "cpos_left", with = FALSE])
     right <- as.integer(.SD[1, "cpos_right", with = FALSE])
@@ -88,11 +93,11 @@ setMethod("encode", "regions", function(.Object, filename = NULL, verbose = TRUE
   }
   
   if (verbose) message("... unfolding regions to annotated tokens")
-  cposDTextensive <- cposDT[, .unfold(.SD), by = .(index)]
+  cposDTextensive <- cposDT[, .unfold(.SD), by = "index", with = TRUE]
   
   if (verbose) message("... compressing annotations")
   .compress <- function(.SD) paste("|", paste(.SD[["id"]], collapse = "|"), "|", sep = "")
-  cposDTaggr <- cposDTextensive[, .compress(.SD), by = .(cpos)]
+  cposDTaggr <- cposDTextensive[, .compress(.SD), by = "cpos"]
   setorder(cposDTaggr, cols = "cpos")
   
   if (verbose) message("... getting token stream")
@@ -105,12 +110,12 @@ setMethod("encode", "regions", function(.Object, filename = NULL, verbose = TRUE
   setkeyv(tokenStreamDT, cols = "cpos")
   setkeyv(cposDTaggr, cols = "cpos")
   tokenDT <- cposDTaggr[tokenStreamDT]
-  setnames(tokenDT, old = c("V1"), new = c("annotation"))
+  setnames(tokenDT, old = "V1", new = "annotation")
   
   if (verbose) message("... preparing xml annotations")
-  tokenDT[, xml_left := ifelse(is.na(tokenDT[["annotation"]]), "", paste('<annotation tag="', tokenDT[["annotation"]], '">\n', sep = ""))]
-  tokenDT[, word := paste(tokenDT[["word"]], "\n", sep = "")]
-  tokenDT[, xml_right := ifelse(is.na(tokenDT[["annotation"]]), "", "</annotation>\n")]
+  tokenDT[, "xml_left" := ifelse(is.na(tokenDT[["annotation"]]), "", paste('<annotation tag="', tokenDT[["annotation"]], '">\n', sep = "")), with = FALSE]
+  tokenDT[, "word" := paste(tokenDT[["word"]], "\n", sep = ""), with = FALSE]
+  tokenDT[, "xml_right" := ifelse(is.na(tokenDT[["annotation"]]), "", "</annotation>\n"), with = FALSE]
   
   if (verbose) message("... preparing output string")
   pasted <- paste(tokenDT[["xml_left"]], tokenDT[["word"]], tokenDT[["xml_right"]], sep = "")

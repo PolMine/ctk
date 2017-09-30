@@ -1,39 +1,41 @@
-setGeneric("characterCount", function(.Object, ...) standardGeneric("characterCount"))
+.characterCount <- function(filename, sourceDir, targetDir, verbose, param = list(xml=TRUE, toLower = TRUE)){
+  if (param[["xml"]] == TRUE){
+    doc <- getChildrenStrings(xmlParse(file.path(sourceDir, filename)))
+  } else {
+    doc <- paste(readLines(file.path(sourceDir, filename)), collapse = "\n")
+  }
+  if ( param$toLower == TRUE ) doc <- tolower(doc)
+  table(unlist(strsplit(doc, "")))
+}
 
-#' count characters in files
+
+#' Count characters in files.
 #' 
 #' @param .Object a directory with XML files
 #' @param regexCharsToKeep a regex defining the characters to keep
 #' @param toLower logical, whether to to apply tolower to string read in
-#' @param progress defaults to TRUE
-#' @param mc defaults to FALSE
-#' @param verbose whether to be verbose
-#' @import XML
+#' @param xml logical, whether filename is a XML file, or not
+#' @param decreasing logical, whether sort order is decreasing, or increasing, see documentation
+#' for \code{order}
+#' @param verbose logical, whether to be talkative
+#' @param ... further parameters that will be passed into \code{dirApply}
+#' @importFrom XML getChildrenStrings xmlParse
 #' @export characterCount
-setMethod("characterCount", "character", function(.Object, regexCharsToKeep="[a-zA-Z]", xml=TRUE, toLower=FALSE, decreasing=TRUE, progress=TRUE, mc=FALSE, verbose=TRUE){
-  if (verbose == TRUE) message("... counting characters")
-  .characterCount <- function(filename, sourceDir, targetDir, verbose, param=list(xml=TRUE, toLower=TRUE)){
-    if (param$xml == TRUE){
-      doc <- getChildrenStrings(xmlParse(file.path(sourceDir, filename)))
-    } else if (param$xml == FALSE){
-      doc <- paste(scan(file.path(sourceDir, filename), quiet=TRUE, what="character", sep="\n"), collapse="\n")
-    }
-    if ( param$toLower == TRUE ) doc <- tolower(doc)
-    table(unlist(strsplit(doc, "")))
-  }
+characterCount <- function(.Object, regexCharsToKeep = "[a-zA-Z]", xml = TRUE, toLower = FALSE, decreasing = TRUE, verbose = TRUE, ...){
+  if (verbose) message("... counting characters")
   charCountList <- dirApply(
-    f=.characterCount, sourceDir=.Object, targetDir=NULL,
-    progress=progress, verbose=verbose, mc=mc, param=list(xml=xml, toLower=toLower)
+    f = .characterCount, sourceDir = .Object, targetDir = NULL,
+    param = list(xml = xml, toLower = toLower), ...
   )
   charCount <- tapply(
     unname(unlist(charCountList)),
-    INDEX=unlist(sapply(charCountList, function(x) names(x))),
-    FUN=sum
+    INDEX = unlist(sapply(charCountList, function(x) names(x))),
+    FUN = sum
   )
   if(is.null(regexCharsToKeep)){
     charCountFiltered <- charCount
   } else {
     charCountFiltered <- charCount[grep(regexCharsToKeep, names(charCount))]
   }
-  charCountFiltered[order(charCountFiltered, decreasing=decreasing)]
-})
+  charCountFiltered[order(charCountFiltered, decreasing = decreasing)]
+}

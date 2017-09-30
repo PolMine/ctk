@@ -1,14 +1,20 @@
 #' Tokenize sentences.
 #' 
+#' @param .Object bla
+#' @param targetDir the target directory
+#' 
+#' @param ... further parameters that are passed into \code{dirApply}
 #' @param targetElement where to finde the text nodes
 #' @param para logical, whether to annotate paragraphs
 #' @return the output of the procedure
 #' @exportMethod tokenizeSentences
 #' @author Andreas Blaette
+#' @rdname tokenizeSentences
 setGeneric("tokenizeSentences", function(.Object, ...) standardGeneric("tokenizeSentences"))
 
+#' @rdname tokenizeSentences
 setMethod("tokenizeSentences", "character", function(
-  .Object, targetDir, targetElement="p", para=FALSE, mc=FALSE, verbose=FALSE, progress=TRUE
+  .Object, targetDir, targetElement = "p", para = FALSE, ...
   ){
   .tokenizeSentences <- function(filename, sourceDir, verbose, targetDir, pyFile){
     cmd <- c("python", pyFile, sourceDir, filename, targetDir, targetElement, as.character(para))
@@ -17,8 +23,9 @@ setMethod("tokenizeSentences", "character", function(
   }
   retval <- .iterateFunctionFiles(
     sourceDir = .Object, f = .tokenizeSentences, pattern="xml",
-    mc=mc, verbose=verbose, progress=progress, targetDir=targetDir,
-    pyFile = system.file("sentenceAnno.py", package="ctk")
+    targetDir=targetDir,
+    pyFile = system.file("sentenceAnno.py", package="ctk"),
+    ...
     )
   retval
 })

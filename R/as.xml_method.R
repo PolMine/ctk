@@ -8,6 +8,8 @@
 #' @param file filename including the path to which the XML will be written
 #' @param clean logical, if TRUE, whitespace will be removed from all columns
 #' @param verbose logical
+#' @param filename a filename
+#' @param ... further parameters
 #' @name as.xml
 #' @rdname as.xml-method 
 #' @exportMethod as.xml

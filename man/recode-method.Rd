@@ -14,15 +14,15 @@ recode(.Object, ...)
 \arguments{
 \item{.Object}{a character string providing a directory}
 
+\item{...}{further parameters that are passed into \code{dirApply}}
+
 \item{targetDir}{where to put files}
 
 \item{from}{encoding of the files in the the sourceDir, if NULL, the command line file utility will be used to detect the encoding of the source file}
 
 \item{to}{final encoding}
 
-\item{mc}{use multicore}
-
-\item{progress}{whether to display progress bar}
+\item{xml}{logical, whether files are XML files}
 }
 \value{
 something

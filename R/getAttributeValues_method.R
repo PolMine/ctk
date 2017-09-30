@@ -1,6 +1,3 @@
-#' @exportMethod getAttributeValues 
-setGeneric("getAttributeValues", function(.Object, ...) standardGeneric("getAttributeValues"))
-
 #' get attribute values
 #' 
 #' Get values of attributes of a XML node in files. 
@@ -16,8 +13,8 @@ setGeneric("getAttributeValues", function(.Object, ...) standardGeneric("getAttr
 #' @param filenames a set of filenames
 #' @return If attrs is a character vector of length 1, a character vector, a matrix otherwise
 #' @import XML
-#' @exportMethod getAttributeValues
-setMethod("getAttributeValues", "character", function(
+#' @export getAttributeValues
+getAttributeValues <- function(
   .Object, element, attrs, unique=TRUE, pattern = "xml",
   mc = FALSE, progress = TRUE, verbose = FALSE, sample = FALSE, filenames = NULL
   ){
@@ -57,4 +54,4 @@ setMethod("getAttributeValues", "character", function(
     }
   }
   retval
-})
+}

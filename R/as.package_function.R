@@ -8,11 +8,12 @@
 #' @param date date of creation
 #' @param maintainer maintainer, R package style
 #' @param description short description of the data package
-#' @param licence the license
+#' @param license the license
 #' @param verbose whether to be verbose
 #' @export as.package
 #' @rdname as.package
 #' @name as.package
+#' @importFrom polmineR RegistryFile
 as.package <- function(
   corpus, targetDir, author, pkg = NULL, version = NULL,
   date = NULL, maintainer = "Andreas Blaette <andreas.blaette@uni-due.de>",
@@ -57,8 +58,8 @@ as.package <- function(
   )
   cat(description_char, file = file.path(targetDir, "DESCRIPTION"), sep = "\n")
   
-  if (verbose == TRUE) message("... copy binary corpus files")
-  filesToCopy <- list.files(registryParsed$HOME, full.names=TRUE)
+  if (verbose) message("... copy binary corpus files")
+  filesToCopy <- list.files(polmineR::RegistryFile$new(corpus)$getHome(), full.names=TRUE)
   dummy <- lapply(
     filesToCopy,
     function(x) {
@@ -99,7 +100,7 @@ unpack <- function(pkg, verbose=TRUE){
   message("... copy binary corpus files from package")
   indexedCorpusDirPkg <- file.path(pkgCwbDir, "indexed_corpora", registryFile)
   lapply(
-    list.files(indexedCorpusDir, full.names = T),
+    list.files(indexedCorpusDirPkg, full.names = TRUE),
     function(x) file.copy(from=x, to=file.path(indexedCorporaDir, registryFile))
     )
 }

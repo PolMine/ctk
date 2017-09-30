@@ -18,14 +18,16 @@ setGeneric("sAttributeList", function(.Object, ...) standardGeneric("sAttributeL
 
 #' get a list with sAttributes from files
 #' 
-#' @param object a directory
-#' @param mc whether to use multicore
+#' @param .Object a directory
+#' @param sample numeric, a subsample of files to derive the s-attributes from
+#' @param ... further parameters that are passed into \code{dirApply} 
 #' @rdname sAttributeList-method
-#' @exportMethod sAttributeList
+#' @export sAttributeList
 #' @import XML
-setMethod("sAttributeList", "character", function(.Object, sample = 100, progress = TRUE, verbose = FALSE, ...){
+#' @importFrom stats setNames
+sAttributeList <- function(.Object, sample = 100, ...){
   docs <- dirApply(
-    f = .getSAttributes, sourceDir=.Object, targetDir = NULL, verbose = FALSE, param=list(), sample = sample, progress = progress
+    f = .getSAttributes, sourceDir=.Object, targetDir = NULL, param=list(), sample = sample, ...
     )
   uniqueElements <- unique(unlist(lapply(docs, names)))
   # sAttrAllDocs <- lapply(setNames(uniqueElements, uniqueElements), function(x) NA)
@@ -36,7 +38,7 @@ setMethod("sAttributeList", "character", function(.Object, sample = 100, progres
     }
   )
   return(sAttributeList)
-})
+}
 
 
 

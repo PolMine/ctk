@@ -1,6 +1,6 @@
-#' ctk-package
+#' R-Package 'ctk' (Corpus Toolkit).
 #' 
-#' Tools for importing XML into the CWB.
+#' Tools for corpus preparation.
 #' 
 #' The ctk-package relies on some external tools, such as the TreeTagger. The package gets
 #' the information on the location of these tools from environment variables that
@@ -18,6 +18,7 @@
 #' @aliases ctk-package
 #' @rdname ctk-package
 #' @author Andreas Blaette
+#' @import methods
 #' @examples
 #' \dontrun{
 #' taz <- new("pipe", projectDir = "/home/blaette/Data/pipeDirs/taz")
@@ -43,25 +44,24 @@ NULL
 #' @keywords datasets
 NULL
 
+#' @name timePerFile-class
+#' @title Time per file.
+#' @description Class and methods to report time consumed to process
+#' files.
 #' @exportClass timePerFile
+#' @param x object to show/pring
+#' @param ... further parameters (not used)
+#' @rdname timePerFile
+#' @aliases timePerFile_class
 setOldClass("timePerFile")
 
-#' @exportMethod show
-setMethod("show", "timePerFile", function(object){
-  meanTime <- round(mean(unlist(lapply(object, as.numeric))), 2)
-  cat("Number of files processed: ", length(object), "\n")
-  cat("Average time per file:     ", meanTime)
-})
 
-#' @exportMethod print
-setMethod("print", "timePerFile", function(x){
+#' @export print.timePerFile
+#' @method print timePerFile
+#' @rdname timePerFile
+print.timePerFile <- function(x, ...){
   meanTime <- round(mean(unlist(lapply(x, as.numeric))), 2)
   cat("Number of files processed: ", length(x), "\n")
   cat("Average time per file:     ", meanTime)
-})
+}
 
-#' @export print.timePerFile
-print.timePerFile <- function(x) show(x)
-
-#' @export show.timePerFile
-show.timePerFile <- function(x) show(x)

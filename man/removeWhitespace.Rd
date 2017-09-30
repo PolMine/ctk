@@ -2,10 +2,15 @@
 % Please edit documentation in R/utils.R
 \name{removeWhitespace}
 \alias{removeWhitespace}
-\title{remove leading and trailing whitespace of a character vector}
+\title{Remove whitespace.}
 \usage{
 removeWhitespace(x, rmBlankLines = TRUE)
 }
+\arguments{
+\item{x}{a character vector to process}
+
+\item{rmBlankLines}{logical, whether to remove blank lines}
+}
 \description{
-remove leading and trailing whitespace of a character vector
+Remove leading and trailing whitespace from a character vector.
 }

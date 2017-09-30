@@ -45,9 +45,9 @@
         last <- length(x)
         x[last] <- gsub("\\s", "_", x[last], perl=T)
         toReplace <- list(
-          c("ä", "ae"), c("ü", "ue"), c("ö", "oe"),
-          c("Ä", "Ae"), c("Ü", "Ue"), c("Ö", "Oe"), 
-          c("ß", "ss")
+          c("\uE4", "ae"), c("\uFC", "ue"), c("\uF6", "oe"),
+          c("\uC4", "Ae"), c("\uDC", "Ue"), c("\uD6", "Oe"), 
+          c("\uDF", "ss")
           )
         for (r in toReplace) x[last] <- gsub(r[1], r[2], x[last])
         x[last] <- gsub("[\\W]", "", x[last], perl=T)

@@ -8,80 +8,71 @@
 #' The XML may still not be valid ("&" etc.), so fix method is still necessary.
 #' 
 #' @param .Object a ctk object
-#' @param sourceDir the source directory
-#' @param targetDir the target directory
 #' @param with either "stanfordNLP", "treetagger" or "openNLP"
 #' @param lang language of the files to be tagged
-#' @param pattern process only files matching the pattern
-#' @param mc use multicore
-#' @param progress show progress bar
-#' @param verbose whether to be verbose
-#' @param sample process only a subset
-#' @param files process only the files specified
-#' @param continue process only files not yet present in target dir
-#' @param failsafe proceed in a failsafe manner
 #' @param ... further paramters
-#' @rdname tokenize-method
+#' @rdname tokenize
 #' @name tokenize
 #' @exportMethod tokenize
+#' @importFrom openNLP Maxent_Sent_Token_Annotator
 setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
 
-# .openNLPtokenizer <- function(filename, sourceDir, targetDir, startTime=Sys.time(), returnString=FALSE, lang="en"){
-#   xmlDoc <- xmlTreeParse(file.path(sourceDir, filename), useInternalNodes=TRUE)
-#   textNodes <- getNodeSet(xmlDoc, path="//p")
-#   newTextNodes <- lapply(
-#     c(1:length(textNodes)),
-#     function(i) {
-#       txt <- xmlValue(textNodes[[i]])
-#       # anno <- NLP::annotate(txt, list(sentTokenAnnotator, wordTokenAnnotator))
-#       sentTokenAnnotator <- Maxent_Sent_Token_Annotator()
-#       annotationSentences <- NLP::annotate(txt, sentTokenAnnotator)
-#       wordTokenAnnotator <- openNLP::Maxent_Word_Token_Annotator(language=lang)
-#       anno <- NLP::annotate(txt, wordTokenAnnotator, annotationSentences)
-#       sentenceAnno <- anno[which(sapply(anno, function(x) x$type) == "sentence")]
-#       sentencesTokenized <- lapply(
-#         sentenceAnno,
-#         function(sAnno) {
-#           constituents <- sAnno$features[[1]]$constituents
-#           sapply(constituents, function(x) {substr(txt, start=anno[x]$start, stop=anno[x]$end)} )
-#         })
-#       txtTagged <- sapply(
-#         sentencesTokenized,
-#         function(tokenVector){paste("<s>\n", paste(tokenVector, collapse="\n"), "\n</s>", sep="")}
+.openNLPtokenizer <- function(filename, sourceDir, targetDir, startTime=Sys.time(), returnString=FALSE, lang="en"){
+  xmlDoc <- xmlTreeParse(file.path(sourceDir, filename), useInternalNodes=TRUE)
+  textNodes <- getNodeSet(xmlDoc, path="//p")
+  newTextNodes <- lapply(
+    c(1:length(textNodes)),
+    function(i) {
+      txt <- xmlValue(textNodes[[i]])
+      # anno <- NLP::annotate(txt, list(sentTokenAnnotator, wordTokenAnnotator))
+      sentTokenAnnotator <- Maxent_Sent_Token_Annotator()
+      annotationSentences <- NLP::annotate(txt, sentTokenAnnotator)
+      wordTokenAnnotator <- openNLP::Maxent_Word_Token_Annotator(language=lang)
+      anno <- NLP::annotate(txt, wordTokenAnnotator, annotationSentences)
+      sentenceAnno <- anno[which(sapply(anno, function(x) x$type) == "sentence")]
+      sentencesTokenized <- lapply(
+        sentenceAnno,
+        function(sAnno) {
+          constituents <- sAnno$features[[1]]$constituents
+          sapply(constituents, function(x) {substr(txt, start=anno[x]$start, stop=anno[x]$end)} )
+        })
+      txtTagged <- sapply(
+        sentencesTokenized,
+        function(tokenVector){paste("<s>\n", paste(tokenVector, collapse="\n"), "\n</s>", sep="")}
+      )
+      # txtTagged <- paste(sentencesTagged, collapse="\n")
+      gsub("&", "&amp;", txtTagged)
+    }
+  )
+  # rm(sentTokenAnnotator)
+  # rm(wordTokenAnnotator)
+  oldTextNodes <- lapply(
+    c(1:length(textNodes)),
+    function(i){
+      # parentOfTextNode <- getNodeSet(textNodes[[i]], path="..")[[1]]
+      # removeNodes(textNodes[[i]])
+      # addChildren(parentOfTextNode, getNodeSet(xmlParse(newTextNodes[[i]]), path="/p/s"))
+      removeNodes(getNodeSet(textNodes[[i]], path="./text()"))
+      addChildren(textNodes[[i]], lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x))))
+#       replaceNodes(
+#         oldNode=textNodes[[i]],
+#         newNode=lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x)))
 #       )
-#       # txtTagged <- paste(sentencesTagged, collapse="\n")
-#       gsub("&", "&amp;", txtTagged)
-#     }
-#   )  
-#   # rm(sentTokenAnnotator)
-#   # rm(wordTokenAnnotator)
-#   oldTextNodes <- lapply(
-#     c(1:length(textNodes)),
-#     function(i){
-#       # parentOfTextNode <- getNodeSet(textNodes[[i]], path="..")[[1]]
-#       # removeNodes(textNodes[[i]]) 
-#       # addChildren(parentOfTextNode, getNodeSet(xmlParse(newTextNodes[[i]]), path="/p/s"))
-#       removeNodes(getNodeSet(textNodes[[i]], path="./text()"))
-#       addChildren(textNodes[[i]], lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x))))
-# #       replaceNodes(
-# #         oldNode=textNodes[[i]],
-# #         newNode=lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x)))
-# #       )
-#     }
-#   )
-#   tokVectorRaw <- saveXML(
-#     xmlDoc, prefix='<?xml version="1.0" encoding="UTF-8"?>\n',
-#     file=NULL, indent=TRUE, encoding="UTF-8"
-#   )
-#   tokVector <- gsub("^\\s*", "", strsplit(tokVectorRaw, "\n")[[1]])
-#   if (returnString == FALSE){
-#     tokFilename <- gsub("^(.*?)\\.xml$", "\\1.tok", filename)
-#     cat(tokVector, file=file.path(targetDir, tokFilename), sep="\n")
-#     return(Sys.time() - startTime)
-#   } else {
-#     return(tokVector)
-#   }
-# }
+    }
+  )
+  tokVectorRaw <- saveXML(
+    xmlDoc, prefix='<?xml version="1.0" encoding="UTF-8"?>\n',
+    file=NULL, indent=TRUE, encoding="UTF-8"
+  )
+  tokVector <- gsub("^\\s*", "", strsplit(tokVectorRaw, "\n")[[1]])
+  if (returnString == FALSE){
+    tokFilename <- gsub("^(.*?)\\.xml$", "\\1.tok", filename)
+    cat(tokVector, file=file.path(targetDir, tokFilename), sep="\n")
+    return(Sys.time() - startTime)
+  } else {
+    return(tokVector)
+  }
+}
 
 
 .tokenizeWorker <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
@@ -172,10 +163,10 @@ setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
   retval
 }
 
- 
-setMethod("tokenize", "character", function(.Object, lang="de", with="stanfordNLP", ...){
+#' @rdname tokenize
+setMethod("tokenize", "character", function(.Object, lang = "de", with="stanfordNLP", ...){
   .tokenizeWorker(
-    filename=.Object, sourceDir=NULL, targetDir=NULL,
+    filename = .Object, sourceDir=NULL, targetDir=NULL,
     verbose=FALSE, param=list(lang=lang, with=with, ...)
     )
 })

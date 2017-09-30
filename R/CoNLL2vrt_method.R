@@ -10,7 +10,7 @@
     c(pattern = "^(<.*?>).*?$", replacement = "$1"),
     c(pattern = "\xC2\xA0", replacement = " "),
     c(pattern = "&", replacement = "&amp;"),
-    c(pattern = " ", replacement = " "),
+    c(pattern = "\u00A0", replacement = " "), # 
     c(pattern = "<\\t", replacement = "st\t")
   )
   for (i in 1:length(replacements)){
@@ -28,14 +28,3 @@
   readr::write_lines(x = lines, path = file.path(targetDir, filename_out))
   Sys.time() - startTime
 }
-
-
-
-# setMethod("CoNLL2vrt", "pipe", function(.Object, sourceDir, targetDir, pattern = "conll", progress = TRUE, mc = FALSE, verbose = FALSE){
-#   dirApply(
-#     f = .CoNLL2vrt,
-#     sourceDir = file.path(.Object@projectDir, sourceDir),
-#     targetDir = file.path(.Object@projectDir, targetDir),
-#     progress = progress, mc = mc, verbose = verbose, pattern = pattern
-#   )
-# })

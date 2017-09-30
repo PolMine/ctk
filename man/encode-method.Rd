@@ -18,6 +18,8 @@ encode(.Object, ...)
 \arguments{
 \item{.Object}{a character vector}
 
+\item{...}{further parameters (not passed)}
+
 \item{corpus}{the corpus name}
 
 \item{registry}{the directory of the CWB registry}
@@ -26,11 +28,15 @@ encode(.Object, ...)
 
 \item{embedding}{levels of embedding elements to allow for}
 
+\item{encoding}{encoding, passed into \code{cwb-encode}}
+
 \item{xml}{whether files are XML}
 
 \item{exec}{logical, whether to execute commands}
 
 \item{verbose}{defaults to TRUE}
+
+\item{filename}{a filename}
 }
 \description{
 This is a wrapper for the \code{cwb-encode} and \code{cwb-make} command line tools. 

@@ -5,9 +5,10 @@ Version: 0.2.21
 Date: 2017-09-19
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
-Description: R Wrapper for sentence segmentation, tagging, and CWB import
+Description: Wrappers and tools for corpus preparation, annotation and CWB import.
 Depends:
-    methods
+    methods,
+    data.table
 Imports:
     XML,
     parallel,
@@ -15,17 +16,20 @@ Imports:
     readr,
     slam,
     stringi,
-    data.table,
     xml2,
     R6,
     jsonlite,
     polmineR,
-    tools
-Suggests:
-    polmineR,
+    tools,
+    stats,
     NLP,
     openNLP
+Suggests:
+    tidytext,
+    tm,
+    knitr
 LazyData: yes
+VignetteBuilder: knitr
 License: CC BY-NC-SA 4.0 | file LICENSE
 Collate: 
     'CoNLL2vrt_method.R'
@@ -50,7 +54,6 @@ Collate:
     'getFiles_method.R'
     'getNgrams_method.R'
     'inspect_method.R'
-    'monthsToNumeric.R'
     'recode_method.R'
     'regexContext_function.R'
     'regex_method.R'

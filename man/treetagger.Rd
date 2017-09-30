@@ -10,6 +10,8 @@ treetagger(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE,
 \arguments{
 \item{filename}{file to process, or a character vector (if sourceDir is NULL)}
 
+\item{sourceDir}{directory with files to be processed}
+
 \item{targetDir}{output directory, if NULL, the processed input will be returned}
 
 \item{verbose}{logical, defaults to TRUE}

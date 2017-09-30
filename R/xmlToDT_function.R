@@ -6,8 +6,10 @@
 #' @param filename the name of the file to read in
 #' @param body an xpath expression defining the body of the xml document
 #' @param meta a named character vector with xpath expressions
+#' @param mc a numeric/integer value, will be passed to param \code{mc.cores}
+#' in a call to \code{mclapply} - number of cores to use
 #' @export xmlToDT
-#' @importFrom xml2 read_xml xml_attrs xml_find_all xml_name xml_parents xml_text
+#' @importFrom xml2 read_xml xml_attrs xml_find_all xml_name xml_parents xml_text xml_find_first
 #' @importFrom data.table as.data.table
 xmlToDT <- function(filename, body = "//body", meta = NULL, mc = NULL){
   doc <- xml2::read_xml(filename)
