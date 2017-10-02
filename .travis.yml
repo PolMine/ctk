@@ -36,6 +36,7 @@ before_install:
   - wget http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/german-par-linux-3.2-utf8.bin.gz
   - wget http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/english-par-linux-3.2-utf8.bin.gz
   - sh install-tagger.sh
+  - Rscript -e 'install.packages(pkgs = "covr")'
 
 warnings_are_errors: false
 
