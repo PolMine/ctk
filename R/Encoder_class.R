@@ -18,30 +18,6 @@
 #' @export Encoder
 #' @rdname Encoder
 #' @importFrom data.table uniqueN
-#' @examples 
-#' library(tm)
-#' reut21578 <- system.file("texts", "crude", package = "tm")
-#' reuters.tm <- VCorpus(DirSource(reut21578), list(reader = readReut21578XMLasPlain))
-#' 
-#' library(tidytext)
-#' reuters.tibble <- tidy(reuters.tm)
-#' reuters.tibble[["topics_cat"]] <- sapply(
-#'   reuters.tibble[["topics_cat"]],
-#'   function(x) paste(reuters.tibble[["topics_cat"]], collapse = "|")
-#' )
-#' reuters.tibble[["places"]] <- sapply(
-#'   reuters.tibble[["places"]],
-#'   function(x) paste(x, collapse = "|")
-#' )
-#' reuters.tidy <- unnest_tokens(
-#'   reuters.tibble, output = "word", input = "text", to_lower = FALSE
-#' )
-#' 
-#' Enc <- Encoder$new(corpus = "reuters")
-#' Enc$pAttrDT <- as.data.table(reuters.tidy[, c("id", "word")])
-#' Enc$sAttrDT <- as.data.table(reuters.tibble[,c("id", "topics_cat", "places", "language")])
-#' 
-#' Enc$encode(pAttributes = "word", sAttributes = c("id", "topics_cat", "places", "language"))
 Encoder <- setRefClass(
   
   "Encoder",
