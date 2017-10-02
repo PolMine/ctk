@@ -8,18 +8,7 @@ addons:
     - libssl-dev
     - libcurl4-openssl-dev
 
-r_packages:
-  - RUnit
-  - devtools
-  - plyr
-  - tm
-  - rcqp
-  - covr
-
-r_github_packages:
-  - PolMine/polmineR
-
-before_install:
+script:
   - mkdir /opt/stanford-corenlp
   - cd /opt/stanford-corenlp
   - wget http://nlp.stanford.edu/software/stanford-corenlp-full-2017-06-09.zip
@@ -36,7 +25,17 @@ before_install:
   - wget http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/german-par-linux-3.2-utf8.bin.gz
   - wget http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/english-par-linux-3.2-utf8.bin.gz
   - sh install-tagger.sh
-  - Rscript -e 'install.packages(pkgs = "covr")'
+
+r_packages:
+  - RUnit
+  - devtools
+  - plyr
+  - tm
+  - rcqp
+  - covr
+
+r_github_packages:
+  - PolMine/polmineR
 
 warnings_are_errors: false
 
