@@ -1,5 +1,7 @@
 language: r
 cache: packages
+sudo: required
+dist: trusty
 
 before_install:
   - sudo ./inst/sh/install_cwb.sh
