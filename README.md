@@ -1,3 +1,8 @@
+[![Travis-CI Build Status](https://api.travis-ci.org/PolMine/ctk.svg?branch=master)](https://travis-ci.org/PolMine/ctk)
+[![codecov](https://codecov.io/gh/PolMine/ctk/branch/master/graph/badge.svg)](https://codecov.io/gh/dselivanov/text2vec/branch/master)
+[![License](https://img.shields.io/badge/license-GPL%3E%3D2-brightgreen.svg)](http://www.gnu.org/licenses/gpl-2.0.html)
+
+
 Welcome to the corpus toolkit (ctk)
 ===================================
 
