@@ -3,10 +3,23 @@ cache: packages
 
 addons:
   apt:
-  packages:
+    packages:
+    - libglib2.0-dev
+    - libssl-dev
+    - libcurl4-openssl-dev
+
+r_packages:
+  - RUnit
+  - devtools
+  - plyr
+  - tm
+  - rcqp
+
+r_github_packages:
+  - PolMine/polmineR
 
 before_install:
-  - Rscript -e 'install.packages(pkgs = c("covr"))'
+  - Rscript -e 'install.packages(pkgs = "covr")'
 
 warnings_are_errors: false
 
