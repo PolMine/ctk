@@ -57,6 +57,7 @@ setOldClass("timePerFile")
 
 
 #' @export print.timePerFile
+#' @S3method print timePerFile
 #' @rdname timePerFile
 print.timePerFile <- function(x, ...){
   meanTime <- round(mean(unlist(lapply(x, as.numeric))), 2)

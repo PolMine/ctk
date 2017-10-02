@@ -30,7 +30,7 @@ Suggests:
     knitr
 LazyData: yes
 VignetteBuilder: knitr
-License: CC BY-NC-SA 4.0 | file LICENSE
+License: GPL-3
 Collate: 
     'CoNLL2vrt_method.R'
     'CoreNLP_class.R'
