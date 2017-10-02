@@ -2,6 +2,7 @@ language: r
 cache: packages
 
 before_install:
+  - ./inst/sh/install_cwb.sh
   - ./inst/sh/install_treetagger.sh
   - ./inst/sh/install_corenlp.sh
 
