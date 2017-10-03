@@ -2,8 +2,6 @@ language: r
 cache: packages
 
 before_install:
-  - cd /usr/local/bin
-  - pwd
   - sudo ./inst/sh/install_cwb.sh
   - ./inst/sh/install_treetagger.sh
   - ./inst/sh/install_corenlp.sh
