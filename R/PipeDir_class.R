@@ -4,16 +4,6 @@
 #' subdirectories of this directory
 #' @field time a data.frame with information that different processing stages have consumed
 #' @field threads an integer, the number of cores to use
-#' @field basetable a \code{data.table} that includes metadata and a column
-#'   'text' with the full text of the corpus
-#' @field metadata a \code{data.table} with the metadata for the corpus; a
-#'   column 'id' serves as an id to link the metadata table with the other
-#'   tables for corpus preparation
-#' @field texttable a \code{data.table} derived from the basetable, includes
-#'   only the column 'id' with the id, and the column 'text' with the
-#'   unparsed full text
-#' @field tokenstream a \code{table} with a columns with the tokenized text and
-#'   further annotation of the corpus
 #' 
 #' @param dir the pipe directory
 #' @param threads an integer, the number of threads to use
@@ -37,11 +27,7 @@ Pipe <- setRefClass(
   fields = list(
     dir = "character",
     time = "data.frame",
-    threads = "integer",
-    basetable = "data.table",
-    metadata = "data.table",
-    texttable = "data.table",
-    tokenstream = "data.table"
+    threads = "integer"
   ),
   
   methods = list(
@@ -59,6 +45,23 @@ Pipe <- setRefClass(
       .self$threads <- threads
     },
     
+    preparePipeDirs = function(sourceDir, verbose = TRUE){
+      
+      "Create sourceDir, or the subdirectories of the pipeDir defined by the sourceDir
+      character vector. If sourceDir already exists, files that are already present
+      are deleted."
+      
+      for (subdir in sourceDir){
+        neededDir <- file.path(.self$dir, subdir)
+        if (!file.exists(neededDir)){
+          dir.create(neededDir)
+        } else {
+          filesToDelete <- list.files(path = file.path(.self$dir, subdir), full.names = TRUE)
+          lapply(filesToDelete, file.remove)
+        }
+      }
+    },
+    
     getFiles = function(sourceDir, targetDir, ...){
       
       "Get/copy Files from several directories to the subdirectory of the pipeDir
@@ -68,78 +71,108 @@ Pipe <- setRefClass(
       
     },
     
-    xmlToBasetable = function(sourceDir = "xml", targetDir = "csv", metadata){
+    xmlToDT = function(sourceDir = "xml", targetDir = "tsv", metadata, verbose = TRUE){
       
-      "Extract text and metadata from XML documents, and keep the resulting
-      'basetable' in the respective slot of the Pipe object."
+      "Extract text and metadata from XML documents, and write resulting 'basetable' as
+      tsv file to subdirectory specified by targetDir."
       
       started <- Sys.time()
       
       filenames <- list.files(file.path(.self$dir, sourceDir), full.names = TRUE)
+      if (verbose) message("... parsing xml files in subdirectory ", sourceDir)
       dtList <- pbapply::pblapply(
         filenames,
         function(x) ctk::xmlToDT(x, meta = metadata), cl = .self$threads
         )
-      .self$basetable <- rbindlist(dtList, fill = TRUE)
+      dt <- rbindlist(dtList, fill = TRUE)
       rm(dtList)
-      .self$basetable[, id := 1:nrow(P$basetable)]
-      
+      dt[, id := 1:nrow(dt)]
+      if (!is.null(targetDir)){
+        if (verbose) message("... writing basetable.tsv to subdirectory ", targetDir)
+        data.table::fwrite(dt, file = file.path(.self$dir, targetDir, "basetable.tsv"))
+      }
       .self$updateProcessingTime(started = started, call = "xmlToDT")
-      invisible(.self$basetable)
+      invisible(dt)
     },
     
-    dissectBasetable = function(targetDir = "csv"){
+    makeMetadataTable = function(sourceDir = "tsv", targetDir = "tsv", verbose = TRUE){
+      
+      "Dissect file basetable.tsv in sourceDir into 'texttable' and 'metadata' as more memory efficient ways
+      for keeping the data. If targetDir is not NULL, the resulting tables will be
+      stored as tsv files in the respective subdirectory of the pipe directory."
+      
+      if (verbose) message("... reading in basetable")
+      basetable <- data.table::fread(file.path(.self$dir, sourceDir, "basetable.tsv"))
+      message("... writing metadata table")
+      metadata <- basetable[, text := NULL]
+      if (!is.null(targetDir)) data.table::fwrite(
+        metadata,
+        file = file.path(.self$dir, targetDir, "metadata.tsv"),
+        quote = TRUE
+        )
+      invisible(metadata)
+    },
+    
+    makePlaintextTable = function(sourceDir = "tsv", targetDir = "tsv", verbose = TRUE){
       
       "Dissect basetable into 'texttable' and 'metadata' as more memory efficient ways
       for keeping the data. If targetDir is not NULL, the resulting tables will be
-      stored as csv files in the respective subdirectory of the pipe directory."
+      stored as tsv files in the respective subdirectory of the pipe directory."
       
-      message("... extracting texttable")
-      .self$texttable <- .self$basetable[, c("id", "text"), with = TRUE]
-      if (!is.null(targetDir)) data.table::fwrite(
-        .self$texttable,
-        file = file.path(.self$dir, targetDir, "texttable.csv")
-        )
-      
-      message("... extracting metadata")
-      .self$metadata <- .self$basetable[, text := NULL]
-      if (!is.null(targetDir)) data.table::fwrite(
-        .self$metadata,
-        file = file.path(.self$dir, targetDir, "metadata.csv"),
-        quote = TRUE
-        )
+      if (verbose) message("... reading in basetable")
+      basetable <- data.table::fread(file.path(.self$dir, sourceDir, "basetable.tsv"))
+      message("... extracting table with pain text and ids")
+      texttable <- basetable[, c("id", "text"), with = TRUE]
+      data.table::fwrite(texttable, file = file.path(.self$dir, targetDir, "texttable.tsv"))
+      invisible(texttable)
     },
     
-    corenlp = function(sourceDir = "csv", targetDir = "ndjson"){
+    
+    corenlp = function(sourceDir = "tsv", targetDir = "ndjson", preclean = TRUE, verbose = TRUE){
       
       "Use Stanford CoreNLP to annotate . "
       
-      if (nrow(.self$texttable) == 0){
-        stop("texttable needs to be present in the respective slot, but is not available")
+      if (verbose) message("... reading in texttable.tsv")
+      texttable <- data.table::fread(file.path(.self$dir, sourceDir, "texttable.tsv"), showProgress = interactive())
+      
+      if (preclean){
+        if (verbose) message("... removing characters not digested properly by StanfordCoreNLP")
+        replacements <- list(
+          c("a<`", "à"), c("e<'", "é"), c("o<\\^", "\u00F4"), c("<vs", "s"),
+          c("<'c", "c"), c("s<v", "\u0161"), c("a<'", "á"), c("<vs", "\u0161"),
+          c("<i<'", "í"), c("e<`", "è"), c("o<'", "ó"), c("z<v", "ž"), c("c<'", "ć"),
+          c("<vz", "ž")
+        )
+        if (interactive()) pb <- txtProgressBar(min = 1, max = length(replacements), style = 3)
+        for (i in 1:length(replacements)){
+          if (interactive()) setTxtProgressBar(pb, i)
+          texttable[, text := gsub(replacements[[i]][1], replacements[[i]][2], texttable[["text"]])]
+        }
+        if (interactive()) close(pb)
       }
-      stopifnot(c("id", "text") %in% colnames(.self$texttable))
+      
+      stopifnot(c("id", "text") %in% colnames(texttable))
       started <- Sys.time()
       if (.self$threads == 1){
         Annotator <- CoreNLP$new(
           method = "json",
           filename = file.path(.self$dir, targetDir, "annotation.ndjson"),
-          stanfordDir = .self$stanfordDir, propertiesFile = .self$propertiesFile
+          stanfordDir = getOption("ctk.stanfordDir"),
+          propertiesFile = getOption("ctk.propertiesFile")
         )
         dummy <- pbapply::pblapply(
-          1:nrow(.self$texttable),
-          function(i) Annotator$annotate(.self$texttable[["text"]][i], id = i)
+          1:nrow(texttable),
+          function(i) Annotator$annotate(texttable[["text"]][i], id = i)
         )
       } else if (.self$threads > 1){
         
         if (rJava:::.check.JVM()){
           message("JVM already up and running - parallelisation very likely to fail!")
-        } else {
-          message("")
         }
         if (Sys.getenv("RSTUDIO") == "1"){
           warning("for some unknown reason, parallelization does not work when RStudio is running")
         }
-        chunks <- text2vec::split_into(1:nrow(.self$texttable), n = .self$threads)
+        chunks <- text2vec::split_into(1:nrow(texttable), n = .self$threads)
         outfiles <- sprintf(
           file.path(.self$dir, targetDir, "corenlp_%d.ndjson"),
           1:.self$threads
@@ -153,7 +186,7 @@ Pipe <- setRefClass(
               stanfordDir = getOption("ctk.stanfordDir"),
               propertiesFile = getOption("ctk.propertiesFile")
             )
-            lapply(chunks[[i]], function(j) Annotator$annotate(.self$texttable[["text"]][j], id = j))
+            lapply(chunks[[i]], function(j) Annotator$annotate(texttable[["text"]][j], id = j))
             return( outfiles[i] )
           }
           , mc.cores = .self$threads
@@ -162,14 +195,14 @@ Pipe <- setRefClass(
 
     },
     
-    ndjsonToDf = function(sourceDir = "ndjson", targetDir = "csv"){
+    ndjsonToDf = function(sourceDir = "ndjson", targetDir = "tsv"){
       
-      "Convert ndjson resulting from Stanford to csv."
+      "Convert ndjson resulting from Stanford to tsv."
       
       started <- Sys.time()
       filenames <- Sys.glob(sprintf("%s/*.ndjson", file.path(.self$dir, "ndjson")))
       message("... number of files to process: ", length(filenames))
-      destfile <- file.path(.self$dir, targetDir, "tokenstream.csv")
+      destfile <- file.path(.self$dir, targetDir, "tokenstream.tsv")
       message("... destfile: ", destfile)
       logfile <- file.path(.self$dir, targetDir, "parsingerrors.log")
       message("... logfile: ", logfile)
@@ -192,45 +225,42 @@ Pipe <- setRefClass(
       )
     },
     
-    addCposToMetadataTable = function(){
+    addTreetaggerLemmatization = function(sourceDir = "tsv", targetDir = "tsv", lang = "de", verbose = TRUE){
       
-      .self$tokenstream[, cpos := 0:(nrow(.self$tokenstream) - 1)]
-      grpn <- uniqueN(.self$tokenstream[["id"]])
-      pb <- txtProgressBar(min = 0, max = grpn, style = 3)
-      cposDT <- .self$tokenstream[
-        ,{
-          setTxtProgressBar(pb, .GRP);
-          list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))
-        }, by = "id"
-        ]
-      close(pb)
-      setkeyv(cposDT, cols = "id")
+      "The method will look for a file 'tokenstream.tsv' in the subdirectory of the pipeDir
+      specified by sourceDir. To use the treetagger, a temporary file is created (tokenstream
+      only) and annotated. The result is read in again, added to the original table and saved
+      to an updated file tokenstream.tsv in the targetDir. If sourceDir and targetDir are
+      identical, the original file is overwritten."
       
-      # dtMetadata <- data.table::fread("~/Lab/tmp/metadata.csv")
-      setkeyv(.self$metadata, cols = "id")
-      enhancedMetadataTable <- .self$metadata[cposDT]
-      .self$metadata <- enhancedMetadataTable
       
-    },
-    
-    encodePAttributes = function(corpus, cols = "word"){
+      if (verbose) message("... reading in tokenstream.tsv")
+      tokenstreamDT <-  data.table::fread(file.path(P$dir, sourceDir, "tokenstream.tsv"), showProgress = interactive())
+      tokenstreamDT <- tokenstreamDT[!is.na(tokenstreamDT[["word"]])] # NAs cause problems!
       
-      polmineR::encode(.self$tokenstream[[cols[1]]], corpus = corpus, pAttribute = cols[1], encoding = "UTF-8")
-      if (length(cols) > 1){
-        for (col in cols[2:length(cols)]){
-          polmineR::encode(.self$tokenstream[[col]], corpus = corpus, pAttribute = col)
-        }
-      }
-    },
-    
-    encodeSAttributes = function(corpus, cols = character()){
       
-      for (col in cols){
-        message("Encoding s-attribute: ", col)
-        dtEnc <- .self$metadata[, c("cpos_left", "cpos_right", col), with = FALSE]
-        polmineR::encode(dtEnc, corpus = "FOO", sAttribute = col)
-      }
+      if (verbose) message("... writing column with tokens to temporary file")
+      tmpdir <- tempdir()
+      data.table::fwrite(
+        tokenstream[, "word", with = TRUE],
+        file = file.path(tmpdir, "tokenstream.tok"),
+        col.names = FALSE,
+        quote = FALSE, showProgress = TRUE
+      )
       
+      if (verbose) message("... run treetagger")
+      .treetagger(sourceDir = tmpdir, targetdir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang))
+      
+      if (verbose) message("... read in treetagger output and supplement tokenstream data.table")
+      treetaggerOutput <- data.table::fread(
+        file.path(tmpdir, "tokenstream.vrt"), sep = "\t", col.names = c("word", "pos", "lemma"),
+        showProgress = interactive()
+      )
+      tokenstreamDT[, lemma := c("im", treetaggerOutput[["lemma"]]) ]
+      tokenstreamDT[, lemma := gsub("^<unknown>$", "#unknown#", tokenstreamDT[["lemma"]])]
+      
+      if (verbose) message("... write result back to tokenstream.tsv")
+      data.table::fwrite(tokenstreamDT, file = file.path(.self$dir, targetDir, "tokenstream.tsv"), sep = "\t")
     },
     
     updateProcessingTime = function(started, call){

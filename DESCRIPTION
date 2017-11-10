@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Toolkit for Preparing Corpora
-Version: 0.2.20
-Date: 2017-09-05
+Version: 0.2.22
+Date: 2017-11-10
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: R Wrapper for sentence segmentation, tagging, and CWB import
@@ -22,11 +22,12 @@ Suggests:
     NLP,
     openNLP
 LazyData: yes
-License: CC BY-NC-SA 4.0 | file LICENSE
-Collate: 
+License: GPL-3
+Collate:
     'pipe_class.R'
     'CoNLL2vrt_method.R'
     'CoreNLP_class.R'
+    'Encoder_class.R'
     'NDJSON_class.R'
     'PipeDir_class.R'
     'PrettyPrintProcessor.R'

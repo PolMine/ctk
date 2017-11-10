@@ -5,6 +5,9 @@
 #' @field registryDir corpus registry, the directory where registry files are stored
 #' @field dataDir directory with indexed corpus files
 #' @field encoding encoding of the corpus
+#' @field tokenstream \code{data.table} with tokenstream, original word forms / tokens
+#' are in column 1, part-of-speech-annotation (pos), lemmatization in further columns
+#' @field metadata \code{data.table} with 
 #' 
 #' @param .Object input object
 #' @param corpus the name of the CWB corpus
@@ -17,7 +20,7 @@
 #' 
 #' @export Encoder
 #' @rdname Encoder
-#' @importFrom data.table uniqueN
+#' @importFrom data.table uniqueN setkeyv fread fwrite setorderv
 #' @examples 
 #' library(tm)
 #' reut21578 <- system.file("texts", "crude", package = "tm")
@@ -38,8 +41,8 @@
 #' )
 #' 
 #' Enc <- Encoder$new(corpus = "reuters")
-#' Enc$pAttrDT <- as.data.table(reuters.tidy[, c("id", "word")])
-#' Enc$sAttrDT <- as.data.table(reuters.tibble[,c("id", "topics_cat", "places", "language")])
+#' Enc$tokenstream <- as.data.table(reuters.tidy[, c("id", "word")])
+#' Enc$metadata <- as.data.table(reuters.tibble[,c("id", "topics_cat", "places", "language")])
 #' 
 #' Enc$encode(pAttributes = "word", sAttributes = c("id", "topics_cat", "places", "language"))
 Encoder <- setRefClass(
@@ -54,8 +57,8 @@ Encoder <- setRefClass(
     dataDir = "character",
     encoding = "character",
     
-    sAttrDT = "data.table",
-    pAttrDT = "data.table"
+    tokenstream = "data.table",
+    metadata = "data.table"
     
   ),
   
@@ -102,8 +105,8 @@ Encoder <- setRefClass(
       
       if (verbose) message("Creating new CWB indexed corpus ", corpus)
       
-      if (!"word" %in% colnames(.self$pAttrDT)) stop("column 'word' required to be in table 'pAttrDT'")
-      encodingInput <- unique(Encoding(.self$pAttrDT[["word"]]))
+      if (!"word" %in% colnames(.self$tokenstream)) stop("column 'word' required to be in table 'tokenstream'")
+      encodingInput <- unique(Encoding(.self$tokenstream[["word"]]))
       if (length(encodingInput) == 1){
         message("encoding of the input vector is: ", encodingInput)
       } else if (length(encodingInput) == 2){
@@ -118,13 +121,13 @@ Encoder <- setRefClass(
         stop("please check encoding of the input character vector - more than one encoding found")
       }
       
-      if (any(grepl("^\\s*<.*?>\\s*$", .self$pAttrDT[["word"]])))
+      if (any(grepl("^\\s*<.*?>\\s*$", .self$tokenstream[["word"]])))
         warning("there is markup in the character vector - cwb-encode will issue warnings")
       
       if (verbose) message("... writing token stream to disk")
       vrtTmpFile <- tempfile()
       # cat(.Object, file = vrtTmpFile, sep = "\n")
-      data.table::fwrite(.self$pAttrDT[, "word", with = TRUE], file = vrtTmpFile,
+      data.table::fwrite(.self$tokenstream[, "word", with = TRUE], file = vrtTmpFile,
                          col.names = FALSE, quote = FALSE, showProgress = TRUE
                          )
       
@@ -148,21 +151,21 @@ Encoder <- setRefClass(
       "Add positional attribute to a corpus that already exists."
       
       # some checks
-      if (nrow(.self$pAttrDT) != polmineR::size(toupper(.self$corpus)))
+      if (nrow(.self$tokenstream) != polmineR::size(toupper(.self$corpus)))
         stop("Length of character vector must be identical with size of corpus - not TRUE.")
       
       if (pAttribute %in% polmineR::pAttributes(toupper(corpus)))
         stop("pAttribute already exists")
       
-      if (any(grepl("^\\s*<.*?$", .self$pAttrDT[[pAttribute]])))
+      if (any(grepl("^\\s*<.*?$", .self$tokenstream[[pAttribute]])))
         warning("there is markup in the character vector - cwb-encode will issue warnings")
       
       # ensure that encoding of .Object vector is encoding of corpus
       if (verbose) message("... checking encoding")
-      if (!polmineR::getEncoding(toupper(corpus)) %in% names(table(Encoding(.self$pAttrDT[["word"]])))){
+      if (!polmineR::getEncoding(toupper(corpus)) %in% names(table(Encoding(.self$tokenstream[["word"]])))){
         if (verbose) message("... encoding of vector different from corpus - assuming it to be that of the locale")
-        .self$pAttrDT[[pAttribute]] <- polmineR::as.corpusEnc(
-          .self$pAttrDT[[pAttribute]],
+        .self$tokenstream[[pAttribute]] <- polmineR::as.corpusEnc(
+          .self$tokenstream[[pAttribute]],
           from = localeToCharset()[1], corpusEnc = polmineR::getEncoding(toupper(corpus))
           )
       }
@@ -170,7 +173,7 @@ Encoder <- setRefClass(
       if (verbose) message("... writing vector to disk for p-attribute ", pAttribute)
       vrtTmpFile <- tempfile()
       data.table::fwrite(
-        .self$pAttrDT[, pAttribute, with = FALSE], file = vrtTmpFile,
+        .self$tokenstream[, pAttribute, with = FALSE], file = vrtTmpFile,
         col.names = FALSE, quote = FALSE, showProgress = TRUE
       )
       
@@ -200,16 +203,11 @@ Encoder <- setRefClass(
       The left corpus position, the right corpus position and the value of a s-attribute
       that will be encoded."
       
-      tab <- .self$sAttrDT[, c("cpos_left", "cpos_right", sAttribute), with = FALSE]
+      tab <- .self$metadata[, c("cpos_left", "cpos_right", sAttribute), with = FALSE]
       setorderv(tab, cols = "cpos_left", order = 1L)
 
       if (verbose) message("... writing table to disk")
       tmp_file <- tempfile()
-      # .Object[[1]] <- as.character(as.integer(.Object[[1]])) # ensure that cpos are integers
-      # .Object[[2]] <- as.character(as.integer(.Object[[2]]))
-      # lines <- apply(.Object, 1, function(x) paste(x, collapse = "\t"))
-      # lines <- paste(lines, "\n", sep = "")
-      # cat(lines, file = tmp_file)
       data.table::fwrite(x = tab, file = tmp_file, quote = FALSE, sep = "\t", col.names = FALSE)
       
       if (verbose) message("... running cwb-s-encode")
@@ -249,7 +247,7 @@ Encoder <- setRefClass(
     
     encode = function(pAttributes = "word", sAttributes = NULL, verbose = TRUE){
       
-      "Encode CWB corpus from tables in fields sAttrDT and pAttrDT."
+      "Encode CWB corpus from tables in fields metadata and tokenstream."
       
       .self$addCorpusPositionsToStructuralAttributesTable()
       
@@ -271,15 +269,15 @@ Encoder <- setRefClass(
     addCorpusPositionsToStructuralAttributesTable = function(verbose = TRUE){
       
       "Add columns cpos_left and cpos_right to table with structural attributes. A
-      precondition is that a column 'id' is present in tables 'pAttrDT' and 'sAttrDT'."
+      precondition is that a column 'id' is present in tables 'tokenstream' and 'metadata'."
       
-      if (!"id" %in% colnames(.self$sAttrDT)) stop("id column required")
-      .self$pAttrDT[, cpos := 0:(nrow(.self$pAttrDT) - 1)]
+      if (!"id" %in% colnames(.self$metadata)) stop("id column required")
+      .self$tokenstream[, cpos := 0:(nrow(.self$tokenstream) - 1)]
       
-      if (verbose) message("... adding corpus positions to table 'sAttrDT'")
-      grpn <- uniqueN(.self$pAttrDT[["id"]])
+      if (verbose) message("... adding corpus positions to table 'metadata'")
+      grpn <- uniqueN(.self$tokenstream[["id"]])
       pb <- txtProgressBar(min = 0, max = grpn, style = 3)
-      cposDT <- .self$pAttrDT[
+      cposDT <- .self$tokenstream[
         ,{
           setTxtProgressBar(pb, .GRP);
           list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))
@@ -288,8 +286,8 @@ Encoder <- setRefClass(
       close(pb)
       setkeyv(cposDT, cols = "id")
       
-      setkeyv(.self$sAttrDT, cols = "id")
-      .self$sAttrDT <- .self$sAttrDT[cposDT]
+      setkeyv(.self$metadata, cols = "id")
+      .self$metadata <- .self$metadata[cposDT]
       
     }
     
