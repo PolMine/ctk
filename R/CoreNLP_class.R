@@ -66,7 +66,13 @@ CoreNLP <- setRefClass(
       .self$colsToKeep <- colsToKeep
       
       jvmStatus <- rJava::.jinit(force.init = TRUE) # does it harm when called again?
+      javaVersion <- .jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
       message("Status of the Java Virtual Machine: ", jvmStatus)
+      message("Java version: ", javaVersion)
+      
+      if (as.numeric(gsub("^(\\d+\\.\\d+)\\..*?$", "\\1", javaVersion)) != 1.8){
+        warning("java version is not 1.8, but ", javaVersion, ". This may violate CoreNLP requirements.")
+      }
       
       # add stanford jars to classpath
       if (is.null(stanfordDir)){

@@ -1,50 +1,14 @@
 ---
-title: "Introducing ctk, the corpus toolkit"
-author: "Andreas Blätte (andreas.blaette@uni-due.de)"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-%\VignetteIndexEntry{Corpus Indexing}
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteEncoding{UTF-8}
+title: "Untitled"
+output: html_document
 ---
 
-
-## From VCorpus to CWB corpus 
-
-As the \code{tm}-package is very popular for text mining, a plausible scenario for many 
-users is turning a \codey{VCorpus} into a CWB indexed corpus. The reuters corpus included
-in the \code{tm} package will serve as an example.
-
-```{r reutersVCorpus}
-library(tm)
-reut21578 <- system.file("texts", "crude", package = "tm")
-reuters.tm <- VCorpus(DirSource(reut21578), list(reader = readReut21578XMLasPlain))
+# fast way to find invalid XML
+```{sh}
+find . -type f | xargs xmllint --noout 2>> ../errors3
+for i in $(grep -P -o "\d+\.vrt" errors3 | uniq); do rm vrt5/$i; done
 ```
 
-
-
-```{r tidytext}
-library(tidytext)
-reuters.tibble <- tidy(reuters.tm)
-reuters.tibble[["topics_cat"]] <- sapply(
-  reuters.tibble[["topics_cat"]],
-  function(x) paste(reuters.tibble[["topics_cat"]], collapse = "|")
-)
-reuters.tibble[["places"]] <- sapply(
-  reuters.tibble[["places"]],
-  function(x) paste(x, collapse = "|")
-)
-reuters.tidy <- unnest_tokens(
-  reuters.tibble, output = "word", input = "text", to_lower = FALSE
-)
-```
-
-
-```{r encode, eval = FALSE}
-Enc <- Encoder$new(corpus = "reuters")
-Enc$pAttrDT <- as.data.table(reuters.tidy[, c("id", "word")])
-Enc$sAttrDT <- as.data.table(reuters.tibble[,c("id", "topics_cat", "places", "language")])
-
-Enc$encode(pAttributes = "word", sAttributes = c("id", "topics_cat", "places", "language"))
+```{r}
+foo <- getNestedElements(taz, corpus = "TAZ2", sourceDir = "vrt5", element = "text")
 ```
