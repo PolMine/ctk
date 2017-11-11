@@ -1,7 +1,3 @@
-#' @include pipe_class.R
-NULL
-
-
 setGeneric("regex", function(object, ...){standardGeneric("regex")})
 
 #' apply regex to a set of files

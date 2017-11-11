@@ -114,23 +114,18 @@
   return(.Object)
 }
 
-.setPaths <- function(.Object){
-  if ("CORPUS_REGISTRY" %in% names(Sys.getenv())) .Object@registry <- Sys.getenv("CORPUS_REGISTRY")
-  if ("PATH_SAXON" %in% names(Sys.getenv())) .Object@saxonPath <- Sys.getenv("PATH_SAXON")
-  if ("PATH_TREETAGGER" %in% names(Sys.getenv())) .Object@treetaggerPath <- Sys.getenv("PATH_TREETAGGER")  
-  return(.Object)
-}
 
-
-#' remove leading and trailing whitespace of a character vector
-#' 
+#' @name removeWhitespace
+#' @title Remove whitespace.
+#' @description Remove leading and trailing whitespace from a character vector.
+#' @param x a character vector to process
+#' @param rmBlankLines logical, whether to remove blank lines
 #' @export removeWhitespace
 removeWhitespace <- function(x, rmBlankLines=TRUE){
   x <- gsub("^\\s*(.*?)\\s*$", "\\1", x)
-  # x <- x[-grep("^\\s*$", x)]
   if (rmBlankLines){
     xList <- as.list(x)
-    for (i in c(length(x):1)) if (grepl("^\\s*$", x)) xList[[i]] <- NULL
+    for (i in length(x):1) if (grepl("^\\s*$", x)) xList[[i]] <- NULL
     x <- unlist(xList)    
   }
   x
@@ -150,15 +145,25 @@ removeEmptyLines <- function(x){
   x
 }
 
+#' @rdname normalizeGermanDate
+monthsToNumeric <- list(
+  "Januar" = "01", "Februar" = "02", "M\uE4rz" = "03",
+  "April" = "04", "Mai" = "05", "Juni" = "06",
+  "Juli" = "07", "August" = "08", "September" = "09",
+  "Oktober" = "10", "November" = "11", "Dezember" = "12"
+)
+
+
 #' normalize german date 
 #' 
+#' @param dateRaw date to process
 #' @importFrom stringi stri_match_all_regex
 #' @export normalizeGermanDate 
 #' @rdname normalizeGermanDate
 #' @name normalizeGermanDate
 normalizeGermanDate <- function(dateRaw){
   monthToNumber <- c(
-    Januar = 1, Februar = 2, März = 3, April = 4,
+    Januar = 1, Februar = 2, "M\uE4rz" = 3, April = 4,
     Mai = 5, Juni = 6, Juli = 7, August = 8,
     September = 9, Oktober = 10, November = 11, Dezember = 12
   )
@@ -176,9 +181,9 @@ normalizeGermanDate <- function(dateRaw){
   )
 }
 
-#' @export regexDate
+#' @rdname normalizeGermanDate
 regexDate <- list(
-  de="\\d+\\.\\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d+"
+  de="\\d+\\.\\s+(Januar|Februar|M\uE4rz|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d+"
 )
 
 

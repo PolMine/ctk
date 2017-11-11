@@ -1,101 +1,93 @@
-#' @include pipe_class.R
-NULL
-
-
-setGeneric("treetagger", function(.Object, ...) standardGeneric("treetagger"))
-
-
-#' use TreeTagger
+#' Use TreeTagger for linguistic annotation.
 #' 
-#' @param .Object a path
-#' @param targetDir output directory
-#' @param treetaggerPath directory with the treetagger
-#' @param parallel whether to use parallel computing
-#' @param lang the language to use
+#' The argument \code{param} is a list passing the arguments \code{lang}, a 
+#' character vector that is expected to be "de", "fr", "it", or "en". The argument
+#' \code{tokenize} is a logical value. If \code{TRUE}, the tokenizer included in
+#' the treetagger scripts used, if \code{FALSE}, the input is expected to be
+#' tokenized already.
+#' 
+#' Depending whether targetDir is defined (i.e. not \code{NULL}), output is written to the
+#' file, or a character vector is returned. If sourceDir is \code{NULL}, filename will serve
+#' as the input character string. It will be written to a temporary file for further
+#' processing.
+#' 
+#' @param filename file to process, or a character vector (if sourceDir is NULL)
+#' @param sourceDir directory with files to be processed
+#' @param targetDir output directory, if NULL, the processed input will be returned
+#' @param param a list that needs to include the language to be used (defaults to 'de') and a logical
+#' vector \code{tokenize} whether the input needs to be tokenized before tagging
 #' @param verbose logical, defaults to TRUE
-#' @rdname treetagger-method
-#' @export .treetagger
+#' @rdname treetagger
+#' @export treetagger
 #' @name treetagger
 #' @importFrom utils capture.output
-.treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
-  if (is.null(targetDir)){
-    targetDir <- tempdir()
-    returnString <- TRUE
-  } else {
-    returnString <- FALSE
-    startTime <- Sys.time()
-  }
-  if (is.null(sourceDir)){
-    sourceDir <- ifelse(is.null(targetDir), tempdir(), targetDir)
-    tmpFilenamePattern <- ifelse("thread" %in% names(param), param[["thread"]], "thread1")
-    tmpFilename <- tempfile(pattern=tmpFilenamePattern, tmpdir=sourceDir, fileext=".tok")
-    tmpFilename <- strsplit(tmpFilename, "/")[[1]][length(strsplit(tmpFilename, "/")[[1]])]
-    cat(filename, file=file.path(sourceDir, tmpFilename), sep="\n")
-    filename <- tmpFilename
-  }
+#' @importFrom tools file_path_sans_ext
+treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list(lang = "de", tokenize = TRUE)){
   
-  lang <- param[["lang"]]
-  filenameOut <- gsub("^(.*)\\..*?$", "\\1.vrt", filename)
-  if (lang == "de"){
-    parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "german-utf8.par")
-  } else if (lang == "fr"){
-    parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "french-utf8.par")
-  } else if (lang == "it"){
-    parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "italian-utf8.par")
-  } else if (lang == "en"){
-    parFile <- file.path(Sys.getenv("PATH_TREETAGGER"), "lib", "english-utf8.par")
-  } else {
-    warning("the language is (not yet) supported")
-  }
-  cmdRaw <- c(
-    "/opt/treetagger/bin/tree-tagger", "-sgml",
-    "-token", "-lemma", parFile,
-    file.path(sourceDir, filename),
-    file.path(targetDir, filenameOut)
+  stopifnot(param[["lang"]] %in% c("de", "fr", "it", "en"))
+  stopifnot("tokenize" %in% names(param))
+  stopifnot(getOption("ctk.treetaggerDir") != "")
+  
+  startTime <- Sys.time()
+  
+  if (param[["tokenize"]] == TRUE){
+    cmdFile <- switch(
+      param[["lang"]],
+      de = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-german"),
+      fr = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree.tagger-french"),
+      it = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-italian"),
+      en = file.path(getOption("ctk.treetaggerDir"), "cmd", "tree-tagger-english")
     )
-  cmd <- paste(cmdRaw, collapse=" ")
-  if (verbose == TRUE) print(cmd)
-  capture.output(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=TRUE))
-  
-  if (returnString == TRUE){
-    retval <- scan(file.path(targetDir, gsub("^(.*?)\\.tok$", "\\1.vrt", filename)), what="character", sep="\n", quiet=TRUE)
-    retval <- paste(retval, collapse="\n")
-    file.remove(file.path(targetDir, filename))
+    if (is.null(sourceDir)){
+      if (!is.null(targetDir)) warning("If sourceDir is NULL, treetagger output is not written to a file!")
+      tmpfile <- tempfile()
+      cat(filename, file = tmpfile)
+      cmdRaw <- c("cat", tmpfile, "|", cmdFile)
+      cmd <- paste(cmdRaw, collapse = " ")
+      retval <- system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
+      return(retval)
+    } else {
+      cmdRaw <- c(cmdFile, file.path(sourceDir, filename))
+      if (is.null(targetDir)){
+        cmd <- paste(cmdRaw, collapse = " ")
+        retval <- system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
+        return(retval)
+      } else {
+        cmdRaw <- c(
+          cmdRaw, ">",
+          file.path(targetDir, paste(tools::file_path_sans_ext(filename), "vrt", sep = "."))
+        )
+        cmd <- paste(cmdRaw, collapse = " ")
+        system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
+        return( Sys.time() - startTime)
+      }
+    }
   } else {
-    retval <- Sys.time() - startTime
-  }
-  retval
-}
-
-
-#' tag one or multiple files
-#' 
-#' Convert XML input files into a tagged corpus
-#' 
-#' @param lang the language to be used (defaults to 'de')
-#' @return the verbose output of the tagging script that is called
-#' @exportMethod treetagger
-#' @rdname pipe
-setMethod("treetagger", "pipe", function(
-  .Object,
-  sourceDir="xml",  targetDir="vrt", py=FALSE, lang="de",
-  ...
-){
-  checkDirs(.Object, sourceDir, targetDir)
-  if (py==TRUE){
-    treetagger(
-      .Object=file.path(.Object@projectDir, sourceDir),
-      targetDir=file.path(.Object@projectDir, targetDir),
-      treetaggerPath=.Object@treetaggerPath,
-      parallel=mc, lang=lang, verbose=verbose
-    )    
-    retval <- NULL
-  } else {
-    retval <- dirApply(
-      f=.treetagger,
-      sourceDir = file.path(.Object@projectDir, sourceDir), targetDir=file.path(.Object@projectDir, targetDir),
-      param = list(lang=lang), ...
+    if (is.null(sourceDir)){
+      stop("Using treetagger without tokenization requires that the input is read from a file.")
+    }
+    parFile <- switch(
+      param[["lang"]],
+      de = file.path(getOption("ctk.treetaggerDir"), "lib", "german-utf8.par"),
+      fr = file.path(getOption("ctk.treetaggerDir"), "lib", "french-utf8.par"),
+      it = file.path(getOption("ctk.treetaggerDir"), "lib", "italian-utf8.par"),
+      en = file.path(getOption("ctk.treetaggerDir"), "lib", "english-utf8.par")
+    )
+    cmdRaw <- c(
+      file.path(getOption("ctk.treetaggerDir"), "bin", "tree-tagger"),
+      "-sgml", "-token", "-lemma",
+      parFile,
+      file.path(sourceDir, filename)
       )
+    if (is.null(targetDir)){
+      cmd <- paste(cmdRaw, collapse = " ")
+      retval <- system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
+      return(retval)
+    } else {
+      cmdRaw <- c(cmdRaw, file.path(targetDir, filename))
+      cmd <- paste(cmdRaw, collapse = " ")
+      system(cmd, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
+      return( Sys.time() - startTime)
+    }
   }
-  retval
-})
+}

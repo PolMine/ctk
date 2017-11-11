@@ -1,6 +1,3 @@
-#' @include pipe_class.R
-NULL
-
 .getSAttributes <- function(filename, sourceDir, targetDir=NULL, verbose=FALSE, param=list()){
   elementSummary <- xmlElementSummary(file.path(sourceDir, filename))
   toReturn <- lapply(
@@ -21,13 +18,16 @@ setGeneric("sAttributeList", function(.Object, ...) standardGeneric("sAttributeL
 
 #' get a list with sAttributes from files
 #' 
-#' @param object a directory
-#' @param mc whether to use multicore
+#' @param .Object a directory
+#' @param sample numeric, a subsample of files to derive the s-attributes from
+#' @param ... further parameters that are passed into \code{dirApply} 
 #' @rdname sAttributeList-method
-#' @exportMethod sAttributeList
-setMethod("sAttributeList", "character", function(.Object, sample = 100, progress = TRUE, verbose = FALSE, ...){
+#' @export sAttributeList
+#' @import XML
+#' @importFrom stats setNames
+sAttributeList <- function(.Object, sample = 100, ...){
   docs <- dirApply(
-    f = .getSAttributes, sourceDir=.Object, targetDir = NULL, verbose = FALSE, param=list(), sample = sample, progress = progress
+    f = .getSAttributes, sourceDir=.Object, targetDir = NULL, param=list(), sample = sample, ...
     )
   uniqueElements <- unique(unlist(lapply(docs, names)))
   # sAttrAllDocs <- lapply(setNames(uniqueElements, uniqueElements), function(x) NA)
@@ -38,16 +38,8 @@ setMethod("sAttributeList", "character", function(.Object, sample = 100, progres
     }
   )
   return(sAttributeList)
-})
+}
 
 
-#' @import XML
-#' @exportMethod sAttributeList
-#' @rdname pipe
-setMethod("sAttributeList", "pipe", function(.Object, sourceDir, sample = 100, progress = TRUE, verbose = FALSE, ...){
-  sAttributes <- sAttributeList(file.path(.Object@projectDir, sourceDir), sample = sample, progress = progress, verbose = verbose)
-  .Object@sAttributes <- sAttributes
-  return(.Object)
-})
 
 

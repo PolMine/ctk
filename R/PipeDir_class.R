@@ -242,14 +242,14 @@ Pipe <- setRefClass(
       if (verbose) message("... writing column with tokens to temporary file")
       tmpdir <- tempdir()
       data.table::fwrite(
-        tokenstream[, "word", with = TRUE],
+        tokenstreamDT[, "word", with = TRUE],
         file = file.path(tmpdir, "tokenstream.tok"),
         col.names = FALSE,
         quote = FALSE, showProgress = TRUE
       )
       
       if (verbose) message("... run treetagger")
-      .treetagger(sourceDir = tmpdir, targetdir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang))
+      .treetagger(sourceDir = tmpdir, targetDir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang))
       
       if (verbose) message("... read in treetagger output and supplement tokenstream data.table")
       treetaggerOutput <- data.table::fread(

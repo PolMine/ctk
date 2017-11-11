@@ -1,78 +1,42 @@
-# @include pipe_class.R
-NULL
-
-setGeneric("findReplace", function(object, ...) standardGeneric("findReplace"))
-
-.findReplace <- function(filename, sourceDir, targetDir, verbose, param){
-  startTime <- Sys.time()
-  replacements <- param[["replacements"]]
-  doc <- scan(
-    file=file.path(sourceDir, filename),
-    what="character", sep="\n",
-    blank.lines.skip=TRUE,
-    quiet=TRUE, fileEncoding=param[["encoding"]]
-  )
-  for (replacement in replacements) doc <- gsub(replacement[1], replacement[2], doc)
-  cat(
-    doc, sep="\n",
-    file=file.path(targetDir, filename)
-  )
-  return(Sys.time() - startTime)
+#' Find and replace.
+#' 
+#' @param x character vector either specifying a file directory, or a string to process
+#' @param y a target directory 
+#' @param replacements a list
+#' @param ... further parameters that are passed to \code{dirApply}
+#' @export findAndReplace
+#' @examples 
+#' x <- c("water and milk", "butter or water", "scotch or soda")
+#' findAndReplace(x, replacements = list(c("and", "or"), c("s", "S"), c("\\sw", " W")))
+findAndReplace <- function(x, y = NULL, replacements, ...){
+  if (file.exists(x)[1] == FALSE){
+    y <- .findAndReplace(
+      filename = x, sourceDir = NULL, targetDir = NULL,
+      param = list(replacements = replacements)
+    )
+  } else { 
+    if (file.info(x)[["isdir"]] == FALSE){
+      y <- .findAndReplace(
+        filename = basename(x), sourceDir = dirname(x), targetDir = y,
+        param = list(replacements = replacements)
+      )
+    } else {
+      y <- dirApply(f = .validate, sourceDir = x, targetDir = y, param = list(replacements = replacements), ...)
+    }
+  }
+  y
 }
 
-
-#' @param replacements a list
-#' @param checkValidity whether to validate XML in targetDir
-#' @param progress whether to use progress bar
-#' @exportMethod findReplace
-#' @rdname pipe
-setMethod("findReplace", "pipe", function(
-  object, sourceDir, targetDir,
-  replacements, encoding="UTF-8",
-  ...
-  ){
-  checkDirs(object, sourceDir, targetDir)
-  # assign("replacements", replacements, envir=.GlobalEnv)
-  dirApply(
-    f=.findReplace,
-    sourceDir=file.path(object@projectDir, sourceDir),
-    targetDir=file.path(object@projectDir, targetDir),
-    param=list(replacements=replacements, encoding=encoding),
-    ...
-    )
-})
-
-
-# setMethod("findReplace", "pipe", function(object, sourceDir, targetDir, replacements=regexPostprocessing, checkValidity=TRUE, progress=TRUE, parallel=FALSE){
-#   startTime <- Sys.time()
-#   checkDirs(object, sourceDir, targetDir)
-#   files <- list.files(file.path(object@projectDir, sourceDir))
-#   .replace <- function(i){
-#     doc <- scan(
-#       file=file.path(object@projectDir, sourceDir, files[i]),
-#       what="character", sep="\n",
-#       blank.lines.skip=TRUE,
-#       quiet=TRUE
-#     )
-#     for (replacement in replacements) gsub(replacement[1], replacement[2], doc)
-#     cat(
-#       doc, sep="\n",
-#       file=file.path(object@projectDir, targetDir, files[i])
-#     )
-#     if (parallel == FALSE && progress == TRUE) .progressBar(i, length(files))
-#   }
-#   if (parallel == FALSE) foo <- lapply(1:length(files), .replace)
-#   if (parallel == TRUE) foo <- mclapply(1:length(files), .replace)
-#   validity <- ifelse(checkValidity == TRUE, validate(object, targetDir)[[1]][1], NA)
-#   object <- updateTasks(
-#     object, "findReplace",
-#     startTime=startTime, endTime=Sys.time(),
-#     sourceDir=sourceDir, targetDir=targetDir,
-#     filesProcessed=length(files),
-#     validity=validity,
-#     parallel=parallel
-#   )
-#   return(object)
-# })
-
-
+.findAndReplace <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = TRUE, param = list(replacements = list())){
+  if (!is.null(targetDir)) startTime <- Sys.time() # if targetDir is provided, return processing time
+  
+  doc <- if (!is.null(sourceDir)) readLines(file.path(sourceDir, filename)) else filename
+  for (replacement in param[["replacements"]]) doc <- gsub(replacement[1], replacement[2], doc)
+  
+  if (is.null(targetDir)){
+    return(doc)
+  } else {
+    cat(doc, sep = "\n", file = file.path(targetDir, filename))
+    return( Sys.time() - startTime )
+  }
+}

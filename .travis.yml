@@ -1,0 +1,35 @@
+language: r
+cache: packages
+
+before_install:
+  - sudo ./inst/sh/install_cwb.sh
+  - ./inst/sh/install_treetagger.sh
+  - ./inst/sh/install_corenlp.sh
+
+addons:
+  apt:
+    packages:
+    - libglib2.0-dev
+    - libssl-dev
+    - libcurl4-openssl-dev
+
+r_packages:
+  - RUnit
+  - devtools
+  - plyr
+  - tm
+  - rcqp
+  - covr
+
+r_github_packages:
+  - PolMine/polmineR
+
+warnings_are_errors: false
+
+notifications:
+  email:
+  on_success: change
+  on_failure: change
+
+after_success:
+  - Rscript -e 'library(covr);codecov(token = "4c835a53-60f1-4d57-af32-8556ff9745f5")'
