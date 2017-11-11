@@ -2,11 +2,6 @@
 #' 
 #' @section Methods:
 #' \describe{
-#'   \item{\code{$xmlToBasetable(sourceDir = "xml", targetDir = "csv", metadata)}}{Extract text and metadata from XML documents, and keep the resulting
-#'   'basetable' in the respective slot of the Pipe object.}
-#'   \item{\code{$dissectBasetable(targetDir = "csv")}}{Dissect basetable into 'texttable' and 'metadata'
-#'   as more memory efficient ways for keeping the data. If targetDir is not NULL, the resulting tables
-#'    will be stored as csv files in the respective subdirectory of the pipe directory.}
 #'   \item{\code{$corenlp(sourceDir = "csv", targetDir = "ndjson")}}{Use Stanford CoreNLP for annotation.}
 #'   \item{\code{$ndjsonToDf(sourceDir = "ndjson", targetDir = "csv")}}{Convert CoreNLP json output to csv.}
 #' }
@@ -46,68 +41,52 @@ PipeCoreNLP <- R6::R6Class(
     texttable = NULL, # "data.table",
     tokenstream = NULL, # "data.table",
     
-
-    xmlToBasetable = function(sourceDir = "xml", targetDir = "csv", metadata){
-      started <- Sys.time()
-      
-      filenames <- list.files(file.path(self$dir, sourceDir), full.names = TRUE)
-      dtList <- pbapply::pblapply(
-        filenames,
-        function(x) ctk::xmlToDT(x, meta = metadata), cl = self$threads
-      )
-      self$basetable <- rbindlist(dtList, fill = TRUE)
-      rm(dtList)
-      self$basetable[, id := 1:nrow(P$basetable)]
-      
-      self$updateProcessingTime(started = started, call = "xmlToDT")
-      invisible(self$basetable)
-    },
     
-    dissectBasetable = function(targetDir = "csv"){
-      message("... extracting texttable")
-      self$texttable <- self$basetable[, c("id", "text"), with = TRUE]
-      if (!is.null(targetDir)) data.table::fwrite(
-        self$texttable,
-        file = file.path(self$dir, targetDir, "texttable.csv")
-      )
+    corenlp = function(sourceDir = "tsv", targetDir = "ndjson", preclean = TRUE, verbose = TRUE){
       
-      message("... extracting metadata")
-      self$metadata <- self$basetable[, text := NULL]
-      if (!is.null(targetDir)) data.table::fwrite(
-        self$metadata,
-        file = file.path(self$dir, targetDir, "metadata.csv"),
-        quote = TRUE
-      )
-    },
-    
-    corenlp = function(sourceDir = "csv", targetDir = "ndjson"){
+      "Use Stanford CoreNLP to annotate . "
       
-      if (nrow(self$texttable) == 0){
-        stop("texttable needs to be present in the respective slot, but is not available")
+      if (verbose) message("... reading in texttable.tsv")
+      texttable <- data.table::fread(file.path(self$dir, sourceDir, "texttable.tsv"), showProgress = interactive())
+      
+      if (preclean){
+        if (verbose) message("... removing characters not digested properly by StanfordCoreNLP")
+        replacements <- list(
+          c("a<`", "\uE0"), c("e<'", "\uE9"), c("o<\\^", "\u00F4"), c("<vs", "s"),
+          c("<'c", "c"), c("s<v", "\u0161"), c("a<'", "\uE1"), c("<vs", "\u0161"),
+          c("<i<'", "\uED"), c("e<`", "\uE8"), c("o<'", "0xF3"), c("z<v", "\u17E"), c("c<'", "\u107"),
+          c("<vz", "\u17E")
+        )
+        if (interactive()) pb <- txtProgressBar(min = 1, max = length(replacements), style = 3)
+        for (i in 1:length(replacements)){
+          if (interactive()) setTxtProgressBar(pb, i)
+          texttable[, text := gsub(replacements[[i]][1], replacements[[i]][2], texttable[["text"]])]
+        }
+        if (interactive()) close(pb)
       }
-      stopifnot(c("id", "text") %in% colnames(self$texttable))
+      
+      stopifnot(c("id", "text") %in% colnames(texttable))
       started <- Sys.time()
       if (self$threads == 1){
         Annotator <- CoreNLP$new(
           method = "json",
           filename = file.path(self$dir, targetDir, "annotation.ndjson"),
-          stanfordDir = self$stanfordDir, propertiesFile = self$propertiesFile
+          stanfordDir = getOption("ctk.stanfordDir"),
+          propertiesFile = getOption("ctk.propertiesFile")
         )
         dummy <- pbapply::pblapply(
-          1:nrow(self$texttable),
-          function(i) Annotator$annotate(self$texttable[["text"]][i], id = i)
+          1:nrow(texttable),
+          function(i) Annotator$annotate(texttable[["text"]][i], id = i)
         )
       } else if (self$threads > 1){
         
         if (rJava:::.check.JVM()){
           message("JVM already up and running - parallelisation very likely to fail!")
-        } else {
-          message("")
         }
         if (Sys.getenv("RSTUDIO") == "1"){
           warning("for some unknown reason, parallelization does not work when RStudio is running")
         }
-        chunks <- text2vec::split_into(1:nrow(self$texttable), n = self$threads)
+        chunks <- text2vec::split_into(1:nrow(texttable), n = self$threads)
         outfiles <- sprintf(
           file.path(self$dir, targetDir, "corenlp_%d.ndjson"),
           1:self$threads
@@ -121,13 +100,12 @@ PipeCoreNLP <- R6::R6Class(
               stanfordDir = getOption("ctk.stanfordDir"),
               propertiesFile = getOption("ctk.propertiesFile")
             )
-            lapply(chunks[[i]], function(j) Annotator$annotate(self$texttable[["text"]][j], id = j))
+            lapply(chunks[[i]], function(j) Annotator$annotate(texttable[["text"]][j], id = j))
             return( outfiles[i] )
           }
           , mc.cores = self$threads
         )
       }
-      
     },
     
     ndjsonToDf = function(sourceDir = "ndjson", targetDir = "csv"){
@@ -199,7 +177,7 @@ PipeCoreNLP <- R6::R6Class(
       what <- c("basetable", "metadata", "texttable", "tokenstream")
       L <- lapply(
         setNames(what, what),
-        function(x) format(object.size(.self[[x]]), "MB")
+        function(x) format(object.size(self[[x]]), "MB")
       )
       as.data.frame(as.matrix(L))
     }

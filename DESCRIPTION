@@ -8,7 +8,8 @@ Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: Wrappers and tools for corpus preparation, annotation and CWB import.
 Depends:
     methods,
-    data.table
+    data.table,
+    knitr
 Imports:
     XML,
     parallel,
@@ -26,8 +27,8 @@ Imports:
     openNLP
 Suggests:
     tidytext,
-    tm,
-    knitr
+    tm
+VignetteBuilder: knitr
 LazyData: yes
 License: GPL-3
 Collate:

@@ -59,6 +59,7 @@ setOldClass("timePerFile")
 #' @export print.timePerFile
 #' @S3method print timePerFile
 #' @rdname timePerFile
+#' @import knitr
 print.timePerFile <- function(x, ...){
   meanTime <- round(mean(unlist(lapply(x, as.numeric))), 2)
   cat("Number of files processed: ", length(x), "\n")

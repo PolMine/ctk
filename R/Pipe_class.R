@@ -13,7 +13,7 @@
 #'   \item{\code{$new(dir, threads = 1L)}}{Initialize new \code{Pipe} object.}
 #'   \item{\code{$summary()}}{Return \code{data.frame} with number of files in
 #'   the subdirectories of the pipe directory.}
-#'   \item{\code{$preparePipe(subdirs = character(), delete = FALSE, verbose = 
+#'   \item{\code{$preparePipeDir(subdirs = character(), delete = FALSE, verbose = 
 #'   TRUE)}}{Create subdirectories provided by \code{subdirs} in the pipe 
 #'   directory, and delete existing files, if \code{delete} is \code{TRUE}.}
 #'   \item{\code{$getFiles(sourceDir, targetDir, ...)}}{Copy Files from 
@@ -38,9 +38,26 @@
 #'   \item{\code{$consolidate(sourceDir, targetDir, consolidation, element, 
 #'   attribute, ...)}}{Perform replacements for XML attributes as provided by 
 #'   character vector \code{consolidation}. (Further documentation is needed!)}
-#'   \item{\code{$xmlToBasetable(sourceDir = "xml", targetDir = "csv", 
-#'   metadata)}}{Extract text and metadata from XML documents, and keep the 
-#'   resulting 'basetable' in the respective slot of the Pipe object.}
+#'   \item{\code{$xmlToDT(sourceDir = "xml", targetDir = "tsv", 
+#'   metadata)}}{Extract text and metadata from XML documents, and write resulting
+#'   'basetable' as tsv file to subdirectory specified by targetDir.}
+#'   \item{\code{addTreetaggerLemmatization(sourceDir = "tsv", targetDir = 
+#'   "tsv", lang = "de", verbose = TRUE)}}{The method will look for a file
+#'   'tokenstream.tsv' in the subdirectory of the pipeDir specified by
+#'   sourceDir. To use the treetagger, a temporary file is created (tokenstream
+#'   only) and annotated. The result is read in again, added to the original
+#'   table and saved to an updated file tokenstream.tsv in the targetDir. If
+#'   sourceDir and targetDir are identical, the original file is overwritten.}
+#'   \item{\code{$makeMetadataTable(sourceDir = "tsv", targetDir = "tsv",
+#'   verbose = TRUE)}}{Dissect file basetable.tsv in sourceDir into 'texttable'
+#'   and 'metadata' as more memory efficient ways for keeping the data. If
+#'   targetDir is not NULL, the resulting tables will be stored as tsv files in
+#'   the respective subdirectory of the pipe directory.}
+#'   \item{\code{$makePlaintextTable(sourceDir = "tsv", targetDir = "tsv", 
+#'   verbose = TRUE)}}{Dissect basetable into 'texttable' and 'metadata' as more
+#'   memory efficient ways for keeping the data. If targetDir is not NULL, the
+#'   resulting tables will be stored as tsv files in the respective subdirectory
+#'   of the pipe directory.}
 #'   \item{\code{$xslt(sourceDir, targetDir, xslFile, ...)}}{Perform XSL
 #'   transformation.}
 #'   \item{\code{$subset(sourceDir, targetDir, sample = NULL, files =
@@ -82,16 +99,6 @@
 #' subdirectories of this directory
 #' @field time a data.frame with information that different processing stages have consumed
 #' @field threads an integer, the number of cores to use
-#' @field basetable a \code{data.table} that includes metadata and a column
-#'   'text' with the full text of the corpus
-#' @field metadata a \code{data.table} with the metadata for the corpus; a
-#'   column 'id' serves as an id to link the metadata table with the other
-#'   tables for corpus preparation
-#' @field texttable a \code{data.table} derived from the basetable, includes
-#'   only the column 'id' with the id, and the column 'text' with the
-#'   unparsed full text
-#' @field tokenstream a \code{table} with a columns with the tokenized text and
-#'   further annotation of the corpus
 #'   
 #' @section Arguments:
 #' \describe{
@@ -157,7 +164,7 @@ Pipe <- R6::R6Class(
       df[["difftime"]] <- difftime(df$last, df$first, units = "auto")
     },
     
-    preparePipe = function(subdirs = character(), delete = FALSE, verbose = TRUE){
+    preparePipeDir = function(subdirs = character(), delete = FALSE, verbose = TRUE){
       for (subdir in subdirs){
         neededDir <- file.path(self$dir, subdir)
         if (!file.exists(neededDir)){
@@ -172,7 +179,6 @@ Pipe <- R6::R6Class(
           }
         }
       }
-      
     },
     
     getFiles = function(sourceDir, targetDir, ...){
@@ -318,6 +324,51 @@ Pipe <- R6::R6Class(
       )
     },
     
+    xmlToDT = function(sourceDir = "xml", targetDir = "tsv", metadata, verbose = TRUE){
+      started <- Sys.time()
+      
+      filenames <- list.files(file.path(self$dir, sourceDir), full.names = TRUE)
+      if (verbose) message("... parsing xml files in subdirectory ", sourceDir)
+      dtList <- pbapply::pblapply(
+        filenames,
+        function(x) ctk::xmlToDT(x, meta = metadata), cl = self$threads
+      )
+      dt <- rbindlist(dtList, fill = TRUE)
+      rm(dtList)
+      dt[, id := 1:nrow(dt)]
+      if (!is.null(targetDir)){
+        if (verbose) message("... writing basetable.tsv to subdirectory ", targetDir)
+        data.table::fwrite(dt, file = file.path(self$dir, targetDir, "basetable.tsv"))
+      }
+      self$updateProcessingTime(started = started, call = "xmlToDT")
+      invisible(dt)
+    },
+    
+    
+    makeMetadataTable = function(sourceDir = "tsv", targetDir = "tsv", verbose = TRUE){
+      if (verbose) message("... reading in basetable")
+      basetable <- data.table::fread(file.path(self$dir, sourceDir, "basetable.tsv"))
+      message("... writing metadata table")
+      metadata <- basetable[, text := NULL]
+      if (!is.null(targetDir)) data.table::fwrite(
+        metadata,
+        file = file.path(self$dir, targetDir, "metadata.tsv"),
+        quote = TRUE
+      )
+      invisible(metadata)
+    },
+    
+    
+    makePlaintextTable = function(sourceDir = "tsv", targetDir = "tsv", verbose = TRUE){
+      if (verbose) message("... reading in basetable")
+      basetable <- data.table::fread(file.path(self$dir, sourceDir, "basetable.tsv"))
+      message("... extracting table with pain text and ids")
+      texttable <- basetable[, c("id", "text"), with = TRUE]
+      data.table::fwrite(texttable, file = file.path(self$dir, targetDir, "texttable.tsv"))
+      invisible(texttable)
+    },
+
+    
     treetagger = function(sourceDir = "tok", targetDir = "vrt", lang = "de", ...){
       dirApply(
         f = treetagger,
@@ -327,6 +378,37 @@ Pipe <- R6::R6Class(
         ...
       )
     },
+    
+    addTreetaggerLemmatization = function(sourceDir = "tsv", targetDir = "tsv", lang = "de", verbose = TRUE){
+      if (verbose) message("... reading in tokenstream.tsv")
+      tokenstreamDT <-  data.table::fread(file.path(P$dir, sourceDir, "tokenstream.tsv"), showProgress = interactive())
+      tokenstreamDT <- tokenstreamDT[!is.na(tokenstreamDT[["word"]])] # NAs cause problems!
+      
+      
+      if (verbose) message("... writing column with tokens to temporary file")
+      tmpdir <- tempdir()
+      data.table::fwrite(
+        tokenstreamDT[, "word", with = TRUE],
+        file = file.path(tmpdir, "tokenstream.tok"),
+        col.names = FALSE,
+        quote = FALSE, showProgress = TRUE
+      )
+      
+      if (verbose) message("... run treetagger")
+      .treetagger(sourceDir = tmpdir, targetDir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang))
+      
+      if (verbose) message("... read in treetagger output and supplement tokenstream data.table")
+      treetaggerOutput <- data.table::fread(
+        file.path(tmpdir, "tokenstream.vrt"), sep = "\t", col.names = c("word", "pos", "lemma"),
+        showProgress = interactive()
+      )
+      tokenstreamDT[, lemma := c("im", treetaggerOutput[["lemma"]]) ]
+      tokenstreamDT[, lemma := gsub("^<unknown>$", "#unknown#", tokenstreamDT[["lemma"]])]
+      
+      if (verbose) message("... write result back to tokenstream.tsv")
+      data.table::fwrite(tokenstreamDT, file = file.path(self$dir, targetDir, "tokenstream.tsv"), sep = "\t")
+    },
+    
     
     updateProcessingTime = function(started, call){
       ended <- Sys.time()
