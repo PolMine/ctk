@@ -3,7 +3,7 @@
   packageStartupMessage(sprintf("ctk %s", packageVersion("ctk")))
   options(
     "ctk.stanfordDir" = Sys.getenv("CORENLP_PATH"),
-    "ctk.propertiesFile" = "",
+    "ctk.propertiesFile" = system.file(package = "ctk", "propertiesFiles", "StanfordCoreNLP-german.properties"),
     "ctk.treetaggerDir" = Sys.getenv("TREETAGGER_PATH")
   )
   packageStartupMessage("... checking for TreeTagger ... ", appendLF = FALSE)
@@ -14,7 +14,8 @@
     corenlpCmd <-  c(
       file.path(getOption("ctk.stanfordDir"), "corenlp.sh"),
       "-annotators tokenize",
-      "-file", file.path(getOption("ctk.stanfordDir"), "input.txt")
+      "-file", file.path(getOption("ctk.stanfordDir"), "input.txt"),
+      "-outputDirectory", tempdir() # write output to some temporary directory
     )
     coreNlpCheck <- system(paste(corenlpCmd, collapse = " "), ignore.stdout = TRUE, ignore.stderr = TRUE)
     if (coreNlpCheck == 0) packageStartupMessage("OK") else packageStartupMessage("FAIL")
