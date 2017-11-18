@@ -26,7 +26,7 @@
 #' @importFrom pbapply pblapply
 #' @importFrom parallel mclapply
 #' @importFrom data.table data.table rbindlist fread fwrite uniqueN
-#' @export Pipe
+#' @export PipeCoreNLP
 #' @importFrom R6 R6Class
 #' @rdname PipeCoreNLP
 PipeCoreNLP <- R6::R6Class(
