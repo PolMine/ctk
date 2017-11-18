@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Toolkit for Preparing Corpora
-Version: 0.2.22
-Date: 2017-11-10
+Version: 0.2.24
+Date: 2017-11-17
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: Wrappers and tools for corpus preparation, annotation and CWB import.
@@ -22,9 +22,7 @@ Imports:
     jsonlite,
     polmineR,
     tools,
-    stats,
-    NLP,
-    openNLP
+    stats
 Suggests:
     tidytext,
     tm

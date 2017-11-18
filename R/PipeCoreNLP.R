@@ -2,8 +2,8 @@
 #' 
 #' @section Methods:
 #' \describe{
-#'   \item{\code{$corenlp(sourceDir = "csv", targetDir = "ndjson")}}{Use Stanford CoreNLP for annotation.}
-#'   \item{\code{$ndjsonToDf(sourceDir = "ndjson", targetDir = "csv")}}{Convert CoreNLP json output to csv.}
+#'   \item{\code{$corenlp(sourceDir = "tsv", targetDir = "ndjson")}}{Use Stanford CoreNLP for annotation.}
+#'   \item{\code{$ndjsonToDf(sourceDir = "ndjson", targetDir = "tsv")}}{Convert CoreNLP json output to csv.}
 #' }
 #' 
 #' @field dir a pipe directory, different processing stages of the corpus will be kept in
@@ -25,6 +25,7 @@
 #' 
 #' @importFrom pbapply pblapply
 #' @importFrom parallel mclapply
+#' @importFrom text2vec split_into
 #' @importFrom data.table data.table rbindlist fread fwrite uniqueN
 #' @export PipeCoreNLP
 #' @importFrom R6 R6Class
@@ -35,12 +36,6 @@ PipeCoreNLP <- R6::R6Class(
   inherit = Pipe,
   
   public = list(
-    
-    basetable = NULL, # "data.table",
-    metadata = NULL, # "data.table",
-    texttable = NULL, # "data.table",
-    tokenstream = NULL, # "data.table",
-    
     
     corenlp = function(sourceDir = "tsv", targetDir = "ndjson", preclean = TRUE, verbose = TRUE){
       
@@ -76,7 +71,7 @@ PipeCoreNLP <- R6::R6Class(
         )
         dummy <- pbapply::pblapply(
           1:nrow(texttable),
-          function(i) Annotator$annotate(texttable[["text"]][i], id = i)
+          function(i) Annotator$annotate(texttable[["text"]][i], id = texttable[i][["id"]])
         )
       } else if (self$threads > 1){
         
@@ -100,7 +95,7 @@ PipeCoreNLP <- R6::R6Class(
               stanfordDir = getOption("ctk.stanfordDir"),
               propertiesFile = getOption("ctk.propertiesFile")
             )
-            lapply(chunks[[i]], function(j) Annotator$annotate(texttable[["text"]][j], id = j))
+            lapply(chunks[[i]], function(j) Annotator$annotate(texttable[["text"]][j], id = texttable[j][["id"]]))
             return( outfiles[i] )
           }
           , mc.cores = self$threads
@@ -108,78 +103,52 @@ PipeCoreNLP <- R6::R6Class(
       }
     },
     
-    ndjsonToDf = function(sourceDir = "ndjson", targetDir = "csv"){
+    ndjsonToDf = function(sourceDir = "ndjson", targetDir = "tsv"){
       started <- Sys.time()
       filenames <- Sys.glob(sprintf("%s/*.ndjson", file.path(self$dir, "ndjson")))
+      # ensure that filenames are processed in the correct order
+      if (all(grepl("\\d+", basename(filenames)))){
+        filenames <- filenames[order(as.integer(gsub("^.*?(\\d+).*?$", "\\1", basename(filenames))))]
+      }
       message("... number of files to process: ", length(filenames))
-      destfile <- file.path(self$dir, targetDir, "tokenstream.csv")
-      message("... destfile: ", destfile)
+      destfile <- file.path(self$dir, targetDir, "tokenstream.tsv")
       logfile <- file.path(self$dir, targetDir, "parsingerrors.log")
-      message("... logfile: ", logfile)
-      JsonParser <- NDJSON$new(destfile = destfile, logfile = logfile)
-      JsonParser$processFiles(filenames)
+      if (self$threads == 1){
+        JsonParser <- NDJSON$new(destfile = destfile, logfile = logfile)
+        JsonParser$processFiles(filenames)
+      } else {
+        filenameList <- text2vec::split_into(filenames, n = self$threads)
+        tmpdir <- tempdir()
+        # removing potentially remaining files in tmpdir is necessary, because the NDJSON
+        # class would just add new output to an already existing file
+        unlink(Sys.glob(sprintf("%s/*.tok", tmpdir)))
+        unlink(Sys.glob(sprintf("%s/*.log", tmpdir)))
+        message("... using temporary directory: ", tmpdir)
+        dtList <- parallel::mclapply(
+          1:length(filenameList),
+          function(i){
+            tmpdestfile <- file.path(tmpdir, paste(i, "tok", sep = "."))
+            tmplogfile <- file.path(tmpdir, paste(i, "log", sep = "."))
+            JsonParser <- NDJSON$new(destfile = tmpdestfile, logfile = tmplogfile)
+            JsonParser$processFiles(filenameList[[i]])
+            data.table::fread(tmpdestfile, sep = "\t", header = TRUE, showProgress = FALSE)
+          },
+          mc.cores = self$threads
+        )
+        dt <- data.table::rbindlist(dtList)
+        setkeyv(dt, cols = "id")
+        setorderv(dt, cols = "id")
+        data.table::fwrite(
+          dt, file = destfile,
+          sep = "\t", row.names = FALSE, col.names = TRUE
+          )
+        logList <- lapply(
+          file.path(tmpdir, paste(1:length(filenameList), "log", sep = ".")),
+          function(x) if (file.exists(x)) readLines(x, warn = FALSE) else NULL
+        )
+        writeLines(unlist(logList), con = logfile)
+      }
       self$updateProcessingTime(started = started, call = "xmlToDT")
-      
-    },
-    
-    addCposToMetadataTable = function(){
-      
-      self$tokenstream[, cpos := 0:(nrow(self$tokenstream) - 1)]
-      grpn <- uniqueN(self$tokenstream[["id"]])
-      pb <- txtProgressBar(min = 0, max = grpn, style = 3)
-      cposDT <- self$tokenstream[
-        ,{
-          setTxtProgressBar(pb, .GRP);
-          list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))
-        }, by = "id"
-        ]
-      close(pb)
-      setkeyv(cposDT, cols = "id")
-      
-      # dtMetadata <- data.table::fread("~/Lab/tmp/metadata.csv")
-      setkeyv(self$metadata, cols = "id")
-      enhancedMetadataTable <- self$metadata[cposDT]
-      self$metadata <- enhancedMetadataTable
-    },
-    
-    encodePAttributes = function(corpus, cols = "word"){
-      
-      polmineR::encode(self$tokenstream[[cols[1]]], corpus = corpus, pAttribute = cols[1], encoding = "UTF-8")
-      if (length(cols) > 1){
-        for (col in cols[2:length(cols)]){
-          polmineR::encode(self$tokenstream[[col]], corpus = corpus, pAttribute = col)
-        }
-      }
-    },
-    
-    encodeSAttributes = function(corpus, cols = character()){
-      
-      for (col in cols){
-        message("Encoding s-attribute: ", col)
-        dtEnc <- self$metadata[, c("cpos_left", "cpos_right", col), with = FALSE]
-        polmineR::encode(dtEnc, corpus = "FOO", sAttribute = col)
-      }
-      
-    },
-    
-    updateProcessingTime = function(started, call){
-      ended <- Sys.time()
-      self$time <- rbind(
-        self$time,
-        data.frame(start = started, end = ended, elapsed = ended - started, row.names = call)
-      )
-      self$time["all", "end"] <- ended
-      self$time["all", "elapsed"] <- ended - self$time["all", "start"]
-      invisible(self$updateProcessingTime)
-    },
-    
-    size = function(){
-      what <- c("basetable", "metadata", "texttable", "tokenstream")
-      L <- lapply(
-        setNames(what, what),
-        function(x) format(object.size(self[[x]]), "MB")
-      )
-      as.data.frame(as.matrix(L))
     }
   )
 )

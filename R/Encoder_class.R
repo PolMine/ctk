@@ -4,7 +4,7 @@
 #' @field registryFile filename of the registry file
 #' @field registryDir corpus registry, the directory where registry files are stored
 #' @field dataDir directory with indexed corpus files
-#' @field encoding encoding of the corpus
+#' @field encoding encoding/charst of the CWB corpus 
 #' @field tokenstream \code{data.table} with tokenstream, original word forms / tokens
 #' are in column 1, part-of-speech-annotation (pos), lemmatization in further columns
 #' @field metadata \code{data.table} with 
@@ -64,7 +64,7 @@ Encoder <- setRefClass(
   
   methods = list(
     
-    initialize = function(corpus, registryDir = Sys.getenv("CORPUS_REGISTRY"), dataDir = NULL){
+    initialize = function(corpus, registryDir = Sys.getenv("CORPUS_REGISTRY"), dataDir = NULL, encoding = "latin1"){
       
       "Initialize an encoder. If the corpus does not yet exist and dataDir is not provided explicitly,
       the data directory will be guessed and suggested. If the corpus is already present, the
@@ -97,7 +97,36 @@ Encoder <- setRefClass(
           .self$dataDir <- dataDir
         }
       }
+      
+      if (!encoding %in% c("ascii", paste("latin", 1:9, sep = ""), "utf8")){
+        stop("encoding is required to be among ascii; latin1 to latin9; utf8")
+      }
+      .self$encoding <- encoding
     },
+    
+    getEncoding = function(x, verbose = TRUE){
+      enc <- unique(Encoding(x))
+      if (length(enc) == 1){
+        if (enc == "unknown"){
+          if (verbose) message("... encoding of the input vector is 'unknown', assuming it to be that of the locale")
+          return( localeToCharset()[1] )
+        } else {
+          if (verbose) message("... encoding of the input vector is: ", enc)
+          return(enc)
+        }
+      } else if (length(enc) == 2){
+        if ("unknown" %in% enc){
+          enc <- enc[-which(enc == "unknown")]
+          if (verbose) message("... encoding of the input vector is: ", enc)
+          return( enc )
+        } else {
+          stop("please check encoding of the input character vector - more than one encoding found")
+        }
+      } else {
+        stop("please check encoding of the input character vector - more than one encoding found")
+      }
+    },
+    
     
     encodeTokenStream = function(verbose = TRUE){
       
@@ -106,28 +135,22 @@ Encoder <- setRefClass(
       if (verbose) message("Creating new CWB indexed corpus ", corpus)
       
       if (!"word" %in% colnames(.self$tokenstream)) stop("column 'word' required to be in table 'tokenstream'")
-      encodingInput <- unique(Encoding(.self$tokenstream[["word"]]))
-      if (length(encodingInput) == 1){
-        message("encoding of the input vector is: ", encodingInput)
-      } else if (length(encodingInput) == 2){
-        if ("unknown" %in% encodingInput){
-          encodingInput <- encodingInput[-which(encodingInput == "unknown")]
-          message("encoding of the input vector is: ", encodingInput)
-          .self$encoding <- encodingInput
-        } else {
-          stop("please check encoding of the input character vector - more than one encoding found")
-        }
-      } else {
-        stop("please check encoding of the input character vector - more than one encoding found")
-      }
+
+      ### 
       
       if (any(grepl("^\\s*<.*?>\\s*$", .self$tokenstream[["word"]])))
         warning("there is markup in the character vector - cwb-encode will issue warnings")
       
+      # adjust encoding, if necessary
+      inputEncoding <- .self$getEncoding(.self$tokenstream[["word"]])
+      if (inputEncoding != .self$encoding){
+        .self$tokenstream[["word"]] <- iconv(.self$tokenstream[["word"]], from = inputEncoding, to = .self$encoding)
+        Encoding(.self$tokenstream[["word"]]) <- .self$encoding
+      }
+      
       if (verbose) message("... writing token stream to disk")
       vrtTmpFile <- tempfile()
-      # cat(.Object, file = vrtTmpFile, sep = "\n")
-      data.table::fwrite(.self$tokenstream[, "word", with = TRUE], file = vrtTmpFile,
+      data.table::fwrite(.self$tokenstream[,"word"], file = vrtTmpFile,
                          col.names = FALSE, quote = FALSE, showProgress = TRUE
                          )
       
@@ -137,7 +160,8 @@ Encoder <- setRefClass(
         "cwb-encode",
         "-d", .self$dataDir, 
         "-f", vrtTmpFile,
-        "-R", .self$registryFile
+        "-R", .self$registryFile,
+        "-c", .self$encoding
       )
       cwbEncodeCmd <- paste0(cwbEncodeCmdVec,collapse = " ")
 
@@ -152,7 +176,7 @@ Encoder <- setRefClass(
       
       # some checks
       if (nrow(.self$tokenstream) != polmineR::size(toupper(.self$corpus)))
-        stop("Length of character vector must be identical with size of corpus - not TRUE.")
+        stop("Length of character vector must be identical with size of corpus - not TRUE")
       
       if (pAttribute %in% polmineR::pAttributes(toupper(corpus)))
         stop("pAttribute already exists")
@@ -160,21 +184,19 @@ Encoder <- setRefClass(
       if (any(grepl("^\\s*<.*?$", .self$tokenstream[[pAttribute]])))
         warning("there is markup in the character vector - cwb-encode will issue warnings")
       
-      # ensure that encoding of .Object vector is encoding of corpus
-      if (verbose) message("... checking encoding")
-      if (!polmineR::getEncoding(toupper(corpus)) %in% names(table(Encoding(.self$tokenstream[["word"]])))){
-        if (verbose) message("... encoding of vector different from corpus - assuming it to be that of the locale")
-        .self$tokenstream[[pAttribute]] <- polmineR::as.corpusEnc(
-          .self$tokenstream[[pAttribute]],
-          from = localeToCharset()[1], corpusEnc = polmineR::getEncoding(toupper(corpus))
-          )
+      # adjust encoding, if necessary
+      inputEncoding <- .self$getEncoding(.self$tokenstream[[pAttribute]])
+      if (inputEncoding != .self$encoding){
+        .self$tokenstream[[pAttribute]] <- iconv(.self$tokenstream[[pAttribute]], from = inputEncoding, to = .self$encoding)
+        Encoding(.self$tokenstream[[pAttribute]]) <- .self$encoding
       }
       
+
       if (verbose) message("... writing vector to disk for p-attribute ", pAttribute)
       vrtTmpFile <- tempfile()
       data.table::fwrite(
         .self$tokenstream[, pAttribute, with = FALSE], file = vrtTmpFile,
-        col.names = FALSE, quote = FALSE, showProgress = TRUE
+        col.names = FALSE, quote = FALSE, showProgress = interactive()
       )
       
       if (verbose) message("... calling cwb-encode")
@@ -184,7 +206,8 @@ Encoder <- setRefClass(
         "-d", .self$dataDir, # directory with indexed corpus files
         "-f", vrtTmpFile,
         "-R", .self$registryFile,
-        "-p", "-", "-P", pAttribute
+        "-p", "-", "-P", pAttribute,
+        "-c", .self$encoding
       )
       cwbEncodeCmd <- paste0(cwbEncodeCmdVec, collapse = " ")
       system(cwbEncodeCmd)
@@ -205,6 +228,13 @@ Encoder <- setRefClass(
       
       tab <- .self$metadata[, c("cpos_left", "cpos_right", sAttribute), with = FALSE]
       setorderv(tab, cols = "cpos_left", order = 1L)
+      
+      # adjust encoding, if necessary
+      inputEncoding <- .self$getEncoding(as.character(tab[[sAttribute]]))
+      if (inputEncoding != .self$encoding){
+        tab[[sAttribute]] <- iconv(tab[[sAttribute]], from = inputEncoding, to = .self$encoding)
+        Encoding(tab[[sAttribute]]) <- .self$encoding
+      }
 
       if (verbose) message("... writing table to disk")
       tmp_file <- tempfile()
@@ -276,14 +306,14 @@ Encoder <- setRefClass(
       
       if (verbose) message("... adding corpus positions to table 'metadata'")
       grpn <- uniqueN(.self$tokenstream[["id"]])
-      pb <- txtProgressBar(min = 0, max = grpn, style = 3)
+      if (interactive()) pb <- txtProgressBar(min = 0, max = grpn, style = 3)
       cposDT <- .self$tokenstream[
         ,{
-          setTxtProgressBar(pb, .GRP);
+          if (interactive()) setTxtProgressBar(pb, .GRP);
           list(cpos_left = min(.SD[["cpos"]]), cpos_right = max(.SD[["cpos"]]))
         }, by = "id"
         ]
-      close(pb)
+      if (interactive()) close(pb)
       setkeyv(cposDT, cols = "id")
       
       setkeyv(.self$metadata, cols = "id")
