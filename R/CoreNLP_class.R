@@ -66,7 +66,7 @@ CoreNLP <- setRefClass(
       .self$colsToKeep <- colsToKeep
       
       jvmStatus <- rJava::.jinit(force.init = TRUE) # does it harm when called again?
-      javaVersion <- .jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
+      javaVersion <- rJava::.jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
       message("Status of the Java Virtual Machine: ", jvmStatus)
       message("Java version: ", javaVersion)
       

@@ -40,7 +40,8 @@
 #'   character vector \code{consolidation}. (Further documentation is needed!)}
 #'   \item{\code{$xmlToDT(sourceDir = "xml", targetDir = "tsv", 
 #'   metadata)}}{Extract text and metadata from XML documents, and write resulting
-#'   'basetable' as tsv file to subdirectory specified by targetDir.}
+#'   'basetable' as tsv file to subdirectory specified by targetDir. The basetable
+#'   is returned invisibly.}
 #'   \item{\code{addTreetaggerLemmatization(sourceDir = "tsv", targetDir = 
 #'   "tsv", lang = "de", verbose = TRUE)}}{The method will look for a file
 #'   'tokenstream.tsv' in the subdirectory of the pipeDir specified by
@@ -331,7 +332,8 @@ Pipe <- R6::R6Class(
       if (verbose) message("... parsing xml files in subdirectory ", sourceDir)
       dtList <- pbapply::pblapply(
         filenames,
-        function(x) ctk::xmlToDT(x, meta = metadata), cl = self$threads
+        function(x) ctk::xmlToDT(x, meta = metadata),
+        cl = self$threads
       )
       dt <- rbindlist(dtList, fill = TRUE)
       rm(dtList)
@@ -353,7 +355,7 @@ Pipe <- R6::R6Class(
       if (!is.null(targetDir)) data.table::fwrite(
         metadata,
         file = file.path(self$dir, targetDir, "metadata.tsv"),
-        quote = TRUE
+        quote = TRUE, showProgress = interactive()
       )
       invisible(metadata)
     },
@@ -364,7 +366,10 @@ Pipe <- R6::R6Class(
       basetable <- data.table::fread(file.path(self$dir, sourceDir, "basetable.tsv"))
       message("... extracting table with pain text and ids")
       texttable <- basetable[, c("id", "text"), with = TRUE]
-      data.table::fwrite(texttable, file = file.path(self$dir, targetDir, "texttable.tsv"))
+      data.table::fwrite(
+        texttable, file = file.path(self$dir, targetDir, "texttable.tsv"),
+        showProgress = interactive()
+        )
       invisible(texttable)
     },
 
@@ -381,9 +386,13 @@ Pipe <- R6::R6Class(
     
     addTreetaggerLemmatization = function(sourceDir = "tsv", targetDir = "tsv", lang = "de", verbose = TRUE){
       if (verbose) message("... reading in tokenstream.tsv")
-      tokenstreamDT <-  data.table::fread(file.path(P$dir, sourceDir, "tokenstream.tsv"), showProgress = interactive())
-      tokenstreamDT <- tokenstreamDT[!is.na(tokenstreamDT[["word"]])] # NAs cause problems!
+      tokenstreamDT <-  data.table::fread(file.path(self$dir, sourceDir, "tokenstream.tsv"), showProgress = interactive())
       
+      # to make processing robus
+      tokenstreamDT <- tokenstreamDT[!is.na(tokenstreamDT[["word"]])] # NAs cause problems!
+      tokenstreamDT <- tokenstreamDT[which(tokenstreamDT[["word"]] != "")] # blank words too
+      setkeyv(tokenstreamDT, cols = "id") # ndjson2tsv may have mixed up the order
+      setorderv(tokenstreamDT, cols = "id")
       
       if (verbose) message("... writing column with tokens to temporary file")
       tmpdir <- tempdir()
@@ -391,22 +400,25 @@ Pipe <- R6::R6Class(
         tokenstreamDT[, "word", with = TRUE],
         file = file.path(tmpdir, "tokenstream.tok"),
         col.names = FALSE,
-        quote = FALSE, showProgress = TRUE
+        quote = FALSE, showProgress = interactive()
       )
       
       if (verbose) message("... run treetagger")
-      .treetagger(sourceDir = tmpdir, targetDir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang))
+      treetagger(sourceDir = tmpdir, targetDir = tmpdir, filename = "tokenstream.tok", param = list(lang = lang, tokenize = FALSE))
       
       if (verbose) message("... read in treetagger output and supplement tokenstream data.table")
       treetaggerOutput <- data.table::fread(
         file.path(tmpdir, "tokenstream.vrt"), sep = "\t", col.names = c("word", "pos", "lemma"),
-        showProgress = interactive()
+        header = FALSE, showProgress = interactive()
       )
-      tokenstreamDT[, lemma := c("im", treetaggerOutput[["lemma"]]) ]
+      tokenstreamDT[, lemma := treetaggerOutput[["lemma"]]]
       tokenstreamDT[, lemma := gsub("^<unknown>$", "#unknown#", tokenstreamDT[["lemma"]])]
       
       if (verbose) message("... write result back to tokenstream.tsv")
-      data.table::fwrite(tokenstreamDT, file = file.path(self$dir, targetDir, "tokenstream.tsv"), sep = "\t")
+      data.table::fwrite(
+        tokenstreamDT, file = file.path(self$dir, targetDir, "tokenstream.tsv"),
+        sep = "\t", showProgress = interactive()
+        )
     },
     
     

@@ -84,10 +84,10 @@ treetagger <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = F
       retval <- system(cmd, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE)
       return(retval)
     } else {
-      cmdRaw <- c(cmdRaw, file.path(targetDir, filename))
+      cmdRaw <- c(cmdRaw, file.path(targetDir, paste(tools::file_path_sans_ext(filename), "vrt", sep = ".")))
       cmd <- paste(cmdRaw, collapse = " ")
       system(cmd, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
-      return( Sys.time() - startTime)
+      return( Sys.time() - startTime )
     }
   }
 }
