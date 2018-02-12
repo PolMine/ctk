@@ -1,4 +1,4 @@
-.characterCount <- function(filename, sourceDir, targetDir, verbose, param = list(xml=TRUE, toLower = TRUE)){
+.characterCount <- function(filename, sourceDir, targetDir, verbose, param = list(xml = TRUE, toLower = TRUE)){
   if (param[["xml"]] == TRUE){
     doc <- getChildrenStrings(xmlParse(file.path(sourceDir, filename)))
   } else {

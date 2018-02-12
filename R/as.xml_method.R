@@ -16,15 +16,15 @@
 setGeneric("as.xml", function(.Object, ...) standardGeneric("as.xml"))
 
 #' @rdname as.xml-method 
-setMethod("as.xml", "data.frame", function(.Object, meta, body, file, root="collection", element="text", clean=TRUE, verbose=TRUE){
-  if (clean == TRUE){
-    if (clean == TRUE) message("... removing whitespace")
+setMethod("as.xml", "data.frame", function(.Object, meta, body, file, root = "collection", element = "text", clean = TRUE, verbose = TRUE){
+  if (clean){
+    if (verbose) message("... removing whitespace")
     .clean <- function(x) gsub("^\\s*(.*?)\\s*$", "\\1", x)
     .Object <- t(apply(.Object, 1, .clean))
   }
-  if (verbose == TRUE) message("... creating nodes")
+  if (verbose) message("... creating nodes")
   nodes <- lapply(
-    c(1:nrow(.Object)),
+    1:nrow(.Object),
     function(i) {
       xmlNode(
         element,
@@ -35,7 +35,7 @@ setMethod("as.xml", "data.frame", function(.Object, meta, body, file, root="coll
         attrs=.Object[i,meta]
         )
     })
-  if (verbose == TRUE) message("... writing XML")
+  if (verbose) message("... writing XML")
   saveXML(
     xmlNode("root", .children=nodes), file=file,
     prefix = '<?xml version="1.0" encoding="utf-8"?>\n', encoding="UTF-8"
@@ -49,13 +49,13 @@ setMethod("as.xml", "list", function(.Object, filename=NULL){
   docRoot <- xmlRoot(doc)
   xmlAttrs(docRoot) <- .Object[["meta"]]
   dummy <- lapply(
-    c(1:length(.Object[["body"]])),
+    1:length(.Object[["body"]]),
     function(i){
       addChildren(docRoot, newXMLNode("p", attrs=c(type=names(.Object[["body"]])[i]), .Object[["body"]][i]))
     })
   xmlRaw <- saveXML(
     doc, prefix='<?xml version="1.0" encoding="UTF-8"?>\n',
-    indent=T, encoding="UTF-8"
+    indent = TRUE, encoding="UTF-8"
   )
   xmlDoc <- unlist(strsplit(xmlRaw, "\\n\\s*"))
   if (is.null(filename)){
