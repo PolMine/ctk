@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Set these paths appropriately
+
+BIN=/Users/blaette/Lab/github/ctk/inst/exttools/treetagger/bin
+CMD=/Users/blaette/Lab/github/ctk/inst/exttools/treetagger/cmd
+LIB=/Users/blaette/Lab/github/ctk/inst/exttools/treetagger/lib
+
+OPTIONS="-token -lemma -sgml"
+
+TAGGER=${BIN}/tree-tagger
+TOKENIZER=${CMD}/utf8-tokenize.perl
+ABBR_LIST=${LIB}/dutch-abbreviations
+PARFILE=${LIB}/dutch-utf8.par
+
+$TOKENIZER -a $ABBR_LIST $* |
+$TAGGER $OPTIONS $PARFILE

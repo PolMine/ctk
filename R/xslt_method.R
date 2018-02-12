@@ -1,11 +1,11 @@
 #' @name xslt
 #' @title Perform XSL transformation.
 #' @description Worker function to be iterated over all files using \code{dirApply}.
-#' @param filename a XML file to be processed
+#' @param filename XML file to be processed
 #' @param sourceDir directory where the XML file resides
 #' @param targetDir output directory
 #' @param verbose logical value, whether to be verbose
-#' @param param named list of further parameters, it needs to include xslFile,
+#' @param param named list of further parameters, needs to include \code{xslFile},
 #'   the filename of the XSL file
 #' @rdname xslt
 #' @export xslt

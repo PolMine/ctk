@@ -22,7 +22,8 @@ Imports:
     jsonlite,
     polmineR,
     tools,
-    stats
+    stats,
+    text2vec
 Suggests:
     tidytext,
     tm
@@ -38,7 +39,7 @@ Collate:
     'PipeCoreNLP.R'
     'PrettyPrintProcessor.R'
     'annotate_method.R'
-    'as.package_function.R'
+    'DataPackage.R'
     'as.xml_method.R'
     'characterCount_method.R'
     'consolidate_method.R'
@@ -57,7 +58,6 @@ Collate:
     'regex_method.R'
     'replaceInvalidCharacters_function.R'
     'sAttributeList_method.R'
-    'tokenizeSentences_method.R'
     'tokenize_method.R'
     'treetagger_method.R'
     'utils.R'

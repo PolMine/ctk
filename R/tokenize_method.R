@@ -16,65 +16,8 @@
 #' @exportMethod tokenize
 setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
 
-# .openNLPtokenizer <- function(filename, sourceDir, targetDir, startTime=Sys.time(), returnString=FALSE, lang="en"){
-#   xmlDoc <- xmlTreeParse(file.path(sourceDir, filename), useInternalNodes=TRUE)
-#   textNodes <- getNodeSet(xmlDoc, path="//p")
-#   newTextNodes <- lapply(
-#     c(1:length(textNodes)),
-#     function(i) {
-#       txt <- xmlValue(textNodes[[i]])
-#       # anno <- NLP::annotate(txt, list(sentTokenAnnotator, wordTokenAnnotator))
-#       sentTokenAnnotator <- Maxent_Sent_Token_Annotator()
-#       annotationSentences <- NLP::annotate(txt, sentTokenAnnotator)
-#       wordTokenAnnotator <- openNLP::Maxent_Word_Token_Annotator(language=lang)
-#       anno <- NLP::annotate(txt, wordTokenAnnotator, annotationSentences)
-#       sentenceAnno <- anno[which(sapply(anno, function(x) x$type) == "sentence")]
-#       sentencesTokenized <- lapply(
-#         sentenceAnno,
-#         function(sAnno) {
-#           constituents <- sAnno$features[[1]]$constituents
-#           sapply(constituents, function(x) {substr(txt, start=anno[x]$start, stop=anno[x]$end)} )
-#         })
-#       txtTagged <- sapply(
-#         sentencesTokenized,
-#         function(tokenVector){paste("<s>\n", paste(tokenVector, collapse="\n"), "\n</s>", sep="")}
-#       )
-#       # txtTagged <- paste(sentencesTagged, collapse="\n")
-#       gsub("&", "&amp;", txtTagged)
-#     }
-#   )
-#   # rm(sentTokenAnnotator)
-#   # rm(wordTokenAnnotator)
-#   oldTextNodes <- lapply(
-#     c(1:length(textNodes)),
-#     function(i){
-#       # parentOfTextNode <- getNodeSet(textNodes[[i]], path="..")[[1]]
-#       # removeNodes(textNodes[[i]])
-#       # addChildren(parentOfTextNode, getNodeSet(xmlParse(newTextNodes[[i]]), path="/p/s"))
-#       removeNodes(getNodeSet(textNodes[[i]], path="./text()"))
-#       addChildren(textNodes[[i]], lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x))))
-# #       replaceNodes(
-# #         oldNode=textNodes[[i]],
-# #         newNode=lapply(newTextNodes[[i]], function(x) xmlRoot(xmlParse(x)))
-# #       )
-#     }
-#   )
-#   tokVectorRaw <- saveXML(
-#     xmlDoc, prefix='<?xml version="1.0" encoding="UTF-8"?>\n',
-#     file=NULL, indent=TRUE, encoding="UTF-8"
-#   )
-#   tokVector <- gsub("^\\s*", "", strsplit(tokVectorRaw, "\n")[[1]])
-#   if (returnString == FALSE){
-#     tokFilename <- gsub("^(.*?)\\.xml$", "\\1.tok", filename)
-#     cat(tokVector, file=file.path(targetDir, tokFilename), sep="\n")
-#     return(Sys.time() - startTime)
-#   } else {
-#     return(tokVector)
-#   }
-# }
 
-
-.tokenizeWorker <- function(filename, sourceDir=NULL, targetDir=NULL, verbose=FALSE, param=list()){
+.tokenizeWorker <- function(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE, param = list()){
   if (is.null(targetDir)){
     targetDir <- tempdir()
     returnString <- TRUE
@@ -130,27 +73,7 @@ setGeneric("tokenize", function(.Object, ...) standardGeneric("tokenize"))
     cmd <- paste(cmdVector, collapse=" ")
     system(cmd, intern=TRUE)
   } else if (with == "openNLP"){
-    if (
-      requireNamespace("openNLP", quietly=TRUE)
-      && requireNamespace("NLP", quietly=TRUE)
-      ){
-      # sourceDir <- "/home/blaette/Lab/repos/keywords/data/repubblica/xml"
-      # targetDir <- "/home/blaette/Lab/repos/keywords/data/repubblica/tok"
-      # lang <- "it"
-      # sentTokenAnnotator <- openNLP::Maxent_Sent_Token_Annotator(language=lang)
-      # wordTokenAnnotator <- openNLP::Maxent_Word_Token_Annotator(language=lang)
-      # 
-      # foo <- list.files(sourceDir)
-      # i <- 1
-      # filename <- foo[i]
-      # .openNLPtokenizer(filename=foo[i], sourceDir=sourceDir, targetDir=targetDir, lang=lang)
-      return(
-        .openNLPtokenizer(filename=filename, sourceDir=sourceDir, targetDir=targetDir, startTime=startTime, returnString=returnString, lang=lang)
-        )
-    } else {
-      warning("package 'openNLP' is not installed")
-      stop()
-    } 
+    stop("using openNLP is not supported any more")
   }
   if (returnString == TRUE){
     retval <- scan(file.path(targetDir, gsub("^(.*?)\\.xml$", "\\1.tok", filename)), what="character", sep="\n", quiet=TRUE)
