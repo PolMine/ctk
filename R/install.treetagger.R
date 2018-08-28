@@ -2,6 +2,7 @@
 #' @title Install treetagger.
 #' @description The Treetagger is a standard tool for part-of-speech annotation
 #' and lemmatization
+#' @param lang Languages to install.
 #' @export install.treetagger
 #' @rdname install.treetagger   
 install.treetagger <- function(lang = "de"){

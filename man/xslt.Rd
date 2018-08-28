@@ -8,7 +8,7 @@ xslt(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE,
   param = list(xslFile = character()))
 }
 \arguments{
-\item{filename}{a XML file to be processed}
+\item{filename}{XML file to be processed}
 
 \item{sourceDir}{directory where the XML file resides}
 
@@ -16,7 +16,7 @@ xslt(filename, sourceDir = NULL, targetDir = NULL, verbose = FALSE,
 
 \item{verbose}{logical value, whether to be verbose}
 
-\item{param}{named list of further parameters, it needs to include xslFile,
+\item{param}{named list of further parameters, needs to include \code{xslFile},
 the filename of the XSL file}
 }
 \value{

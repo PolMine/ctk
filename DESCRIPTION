@@ -1,8 +1,8 @@
 Package: ctk
 Type: Package
 Title: Toolkit for Preparing Corpora
-Version: 0.2.24
-Date: 2017-11-17
+Version: 0.2.26
+Date: 2018-04-27
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Description: Wrappers and tools for corpus preparation, annotation and CWB import.
@@ -33,12 +33,10 @@ License: GPL-3
 Collate:
     'CoNLL2vrt_method.R'
     'CoreNLP_class.R'
-    'Encoder_class.R'
     'NDJSON_class.R'
     'Pipe_class.R'
     'PipeCoreNLP.R'
     'PrettyPrintProcessor.R'
-    'DataPackage.R'
     'as.xml_method.R'
     'characterCount_method.R'
     'ctk_package.R'
@@ -60,7 +58,9 @@ Collate:
     'treetagger_method.R'
     'utils.R'
     'validate_method.R'
-    'xmlToDT_function.R'
     'xslt_method.R'
     'zzz.R'
+    'install.corenlp.R'
+    'install.saxon.R'
+    'install.treetagger.R'
 RoxygenNote: 6.0.1

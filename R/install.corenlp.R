@@ -3,8 +3,10 @@
 #' @description The function provides an installation mechanism to download and install
 #' Stanford CoreNLP within the ctk package.
 #' and lemmatization
+#' @param lang Languages to install.
 #' @export install.corenlp
 #' @rdname install.corenlp
+#' @importFrom utils download.file unzip zip
 install.corenlp <- function(lang = "de"){
   # create necessary directories
   ctkDir <- system.file(package = "ctk")

@@ -3,20 +3,16 @@
 \docType{methods}
 \name{regex,character-method}
 \alias{regex,character-method}
-\title{apply regex to a set of files}
+\title{Get Matches for Regular Expression in Files in Directory.}
 \usage{
-\S4method{regex}{character}(object, subdir = NULL, pattern = ".*\\\\.xml",
+\S4method{regex}{character}(.Object, pattern = ".*\\\\.xml",
   regex = "<.*?>")
 }
 \arguments{
-\item{object}{a path}
+\item{.Object}{a directory}
 
-\item{subdir}{provide a subdirectory}
-
-\item{pattern}{what to find}
-
-\item{regex}{regex to be applied}
+\item{pattern}{a regular expression passed into \code{list.files} to filter files}
 }
 \description{
-apply regex to a set of files
+Get Matches for Regular Expression in Files in Directory.
 }
